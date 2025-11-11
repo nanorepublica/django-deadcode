@@ -1,0 +1,7 @@
+-r requirements.txt
+pytest>=7.0
+pytest-django>=4.5
+pytest-cov>=4.0
+ruff>=0.1.0
+mypy>=1.0
+django-stubs>=4.2
