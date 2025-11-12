@@ -22,9 +22,7 @@ def my_view(request):
     url = reverse('my-url-name')
     return redirect(url)
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -48,9 +46,7 @@ from django.urls import reverse_lazy
 class MyView:
     success_url = reverse_lazy('success-page')
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -74,9 +70,7 @@ from django.shortcuts import redirect
 def my_view(request):
     return redirect('home-page')
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -101,9 +95,7 @@ from django.urls import reverse
 def my_view(request):
     return HttpResponseRedirect(reverse('detail-page'))
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -139,9 +131,7 @@ class MyView:
 def view3(request):
     return HttpResponseRedirect(reverse('url4'))
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -174,9 +164,7 @@ class MyClass:
         my_list.reverse()  # Should also be ignored
         return result
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -219,9 +207,7 @@ def my_view(request):
     url2 = reverse('admin:index')
     return url
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -249,9 +235,7 @@ def my_view(request, action):
     url = reverse(f'myapp:{action}_list')
     return url
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -280,9 +264,7 @@ def my_view(request, prefix):
     url = reverse('prefix_' + prefix)
     return url
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -309,9 +291,7 @@ def my_view(request):
     # This is malformed Python
     return reverse('test'
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -340,21 +320,27 @@ def my_view(request):
             migrations_dir.mkdir()
 
             migration_file = migrations_dir / "0001_initial.py"
-            migration_file.write_text("""
+            migration_file.write_text(
+                """
 from django.urls import reverse
 
 def some_function():
     return reverse('should-not-be-found')
-""", encoding="utf-8")
+""",
+                encoding="utf-8",
+            )
 
             # Create a regular file that should be analyzed
             regular_file = base_path / "views.py"
-            regular_file.write_text("""
+            regular_file.write_text(
+                """
 from django.urls import reverse
 
 def my_view(request):
     return reverse('should-be-found')
-""", encoding="utf-8")
+""",
+                encoding="utf-8",
+            )
 
             # Analyze all files
             analyzer.analyze_all_python_files(base_path)
@@ -374,30 +360,39 @@ def my_view(request):
 
             # Create multiple files
             file1 = base_path / "views.py"
-            file1.write_text("""
+            file1.write_text(
+                """
 from django.urls import reverse
 
 def view1(request):
     return reverse('url-from-file1')
-""", encoding="utf-8")
+""",
+                encoding="utf-8",
+            )
 
             file2 = base_path / "forms.py"
-            file2.write_text("""
+            file2.write_text(
+                """
 from django.shortcuts import redirect
 
 def form_handler():
     return redirect('url-from-file2')
-""", encoding="utf-8")
+""",
+                encoding="utf-8",
+            )
 
             subdir = base_path / "subapp"
             subdir.mkdir()
 
             file3 = subdir / "utils.py"
-            file3.write_text("""
+            file3.write_text(
+                """
 from django.urls import reverse_lazy
 
 success_url = reverse_lazy('url-from-file3')
-""", encoding="utf-8")
+""",
+                encoding="utf-8",
+            )
 
             # Analyze all files
             analyzer.analyze_all_python_files(base_path)
@@ -420,9 +415,7 @@ def my_view(request):
     url = reverse(viewname='my-url-name')
     return url
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -448,9 +441,7 @@ def my_view(request):
     url2 = reverse('another-page', kwargs={'id': 1})
     return url
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)

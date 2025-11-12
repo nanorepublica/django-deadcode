@@ -40,12 +40,8 @@ class ConsoleReporter(BaseReporter):
         lines.append(f"Total URL patterns: {summary.get('total_urls', 0)}")
         lines.append(f"Total templates analyzed: {summary.get('total_templates', 0)}")
         lines.append(f"Total views found: {summary.get('total_views', 0)}")
-        lines.append(
-            f"Unreferenced URLs: {summary.get('unreferenced_urls_count', 0)}"
-        )
-        lines.append(
-            f"Unused templates: {summary.get('unused_templates_count', 0)}"
-        )
+        lines.append(f"Unreferenced URLs: {summary.get('unreferenced_urls_count', 0)}")
+        lines.append(f"Unused templates: {summary.get('unused_templates_count', 0)}")
         lines.append("")
 
         # Unreferenced URLs

@@ -94,9 +94,7 @@ class Command(BaseCommand):
         output_file = options.get("output")
         if output_file:
             Path(output_file).write_text(report, encoding="utf-8")
-            self.stdout.write(
-                self.style.SUCCESS(f"Report written to: {output_file}")
-            )
+            self.stdout.write(self.style.SUCCESS(f"Report written to: {output_file}"))
         else:
             self.stdout.write("\n" + report)
 
@@ -219,9 +217,7 @@ class Command(BaseCommand):
 
         return analysis_data
 
-    def _generate_report(
-        self, analysis_data: dict[str, Any], format: str
-    ) -> str:
+    def _generate_report(self, analysis_data: dict[str, Any], format: str) -> str:
         """
         Generate report in specified format.
 
@@ -273,6 +269,4 @@ class Command(BaseCommand):
             )
 
         if unreferenced_count == 0 and unused_templates_count == 0:
-            self.stdout.write(
-                self.style.SUCCESS("✓ No obvious dead code detected!")
-            )
+            self.stdout.write(self.style.SUCCESS("✓ No obvious dead code detected!"))

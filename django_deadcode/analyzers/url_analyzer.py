@@ -1,6 +1,5 @@
 """Analyzer for discovering and analyzing Django URL patterns."""
 
-
 from django.conf import settings
 from django.urls import URLPattern, URLResolver, get_resolver
 from django.urls.resolvers import RegexPattern, RoutePattern
@@ -138,9 +137,7 @@ class URLAnalyzer:
             List of URL names
         """
         return [
-            url_name
-            for url_name, view in self.url_to_view.items()
-            if view == view_name
+            url_name for url_name, view in self.url_to_view.items() if view == view_name
         ]
 
     def get_unreferenced_urls(self, referenced_urls: set[str]) -> set[str]:

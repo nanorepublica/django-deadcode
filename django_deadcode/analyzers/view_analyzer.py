@@ -62,9 +62,7 @@ class ViewAnalyzer:
                     self._add_template_reference(file_path, template_name)
 
         # Also check for render_to_response
-        elif (
-            isinstance(node.func, ast.Name) and node.func.id == "render_to_response"
-        ):
+        elif isinstance(node.func, ast.Name) and node.func.id == "render_to_response":
             if node.args and isinstance(node.args[0], ast.Constant):
                 template_name = node.args[0].value
                 if isinstance(template_name, str):
@@ -182,7 +180,6 @@ class ViewAnalyzer:
             "total_views": len(self.view_templates),
             "total_templates_referenced": len(self.template_usage),
             "templates_per_view": {
-                view: len(templates)
-                for view, templates in self.view_templates.items()
+                view: len(templates) for view, templates in self.view_templates.items()
             },
         }
