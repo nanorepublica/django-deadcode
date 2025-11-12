@@ -40,11 +40,19 @@ The following features have been implemented and released:
    - ✅ Tracks {% extends %} tags
    - ✅ Reports template relationships
 
-## 🚧 In Progress / Planned Features
+## ✅ v0.2.0 Features - Complete (2025-11-12)
 
-8. [ ] **Reverse/Redirect Detection** — Implement Python AST analysis to find all reverse() and redirect() calls in view code, capturing programmatic URL references beyond templates. `L`
-   - Not yet started
-   - High priority for reducing false positives
+8. [x] **Reverse/Redirect Detection** — Implement Python AST analysis to find all reverse() and redirect() calls in view code, capturing programmatic URL references beyond templates. `L`
+   - ✅ Implemented in `reverse_analyzer.py`
+   - ✅ Detects `reverse()`, `reverse_lazy()`, `redirect()`, and `HttpResponseRedirect()` patterns
+   - ✅ Handles nested patterns like `HttpResponseRedirect(reverse('url'))`
+   - ✅ Detects namespaced URLs (`'myapp:detail'`)
+   - ✅ Flags dynamic URL patterns (f-strings, concatenation) for manual review
+   - ✅ Integrated with finddeadcode command
+   - ✅ 100% code coverage with 20 comprehensive tests
+   - ✅ Reduces false positives for URLs referenced only in Python code
+
+## 🚧 In Progress / Planned Features
 
 9. [x] **Multi-App Analysis** — Add support for analyzing Django projects with multiple apps, showing cross-app dependencies and generating per-app reports. `M`
    - ⚠️ Partially implemented
@@ -70,24 +78,25 @@ The following features have been implemented and released:
 
 ## 📊 Progress Summary
 
-- **Completed:** 7/12 features (58%)
+- **Completed:** 8/12 features (67%)
 - **Partially Complete:** 2/12 features (17%)
-- **Not Started:** 3/12 features (25%)
-- **MVP Status:** ✅ Complete (features 1-6)
+- **Not Started:** 2/12 features (16%)
+- **MVP Status:** ✅ Complete (features 1-7)
+- **v0.2.0 Status:** ✅ Complete (feature 8)
 
-## 🎯 Next Release (v0.2.0) - Planned
+## 🎯 Next Release (v0.3.0) - Planned
 
-Focus on reducing false positives and improving accuracy:
+Focus on accuracy and usability improvements:
 
-1. **Reverse/Redirect Detection** (Feature 8)
-   - Add AST parsing for `reverse()` calls
-   - Detect `redirect()` to URL names
-   - Track `HttpResponseRedirect(reverse(...))`
-
-2. **Django Admin Detection** (Feature 10)
+1. **Django Admin Detection** (Feature 10)
    - Auto-detect admin.site URLs
    - Skip common third-party package URLs
    - Configurable exclusion patterns
+
+2. **Confidence Scoring System** (Feature 11)
+   - Score each finding based on confidence level
+   - Account for dynamic patterns
+   - Prioritize cleanup recommendations
 
 3. **Enhanced Multi-App Analysis** (Feature 9 completion)
    - Cross-app dependency graph
@@ -96,16 +105,16 @@ Focus on reducing false positives and improving accuracy:
 
 ## 🔮 Future Releases
 
-### v0.3.0 - Intelligence & Usability
-- Confidence scoring system (Feature 11)
-- HTML report generation with interactive visualizations (Feature 12)
-- Prioritized cleanup recommendations
-- CI/CD integration helpers
-
 ### v0.4.0 - Advanced Features
-- Runtime tracking mode (optional)
+- HTML report generation with interactive visualizations (Feature 12)
 - Custom rule definitions
-- IDE plugin support (VS Code, PyCharm)
+- CI/CD integration helpers
 - GitHub Action integration
+
+### v0.5.0 - IDE Integration
+- VS Code extension
+- PyCharm plugin
+- Real-time dead code detection
+- Inline suggestions and quick fixes
 
 > **Note:** The roadmap is flexible and may be adjusted based on user feedback and community contributions.
