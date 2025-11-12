@@ -86,7 +86,7 @@ django_settings_module = "tests.settings"
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
-build_command = "python -m build"
+build_command = ""
 dist_path = "dist/"
 upload_to_vcs_release = true
 commit_message = "chore(release): {version}"
