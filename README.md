@@ -1,5 +1,11 @@
 # Django Dead Code
 
+[![PyPI version](https://badge.fury.io/py/django-deadcode.svg)](https://badge.fury.io/py/django-deadcode)
+[![CI](https://github.com/nanorepublica/django-deadcode/actions/workflows/ci.yml/badge.svg)](https://github.com/nanorepublica/django-deadcode/actions/workflows/ci.yml)
+[![Python versions](https://img.shields.io/pypi/pyversions/django-deadcode.svg)](https://pypi.org/project/django-deadcode/)
+[![Django versions](https://img.shields.io/pypi/djversions/django-deadcode.svg)](https://pypi.org/project/django-deadcode/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A Django dead code analysis tool that tracks relationships between templates, URLs, and views to help identify and remove unused code.
 
 ## Features
