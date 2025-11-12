@@ -6,7 +6,12 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 
-from django_deadcode.analyzers import TemplateAnalyzer, URLAnalyzer, ViewAnalyzer
+from django_deadcode.analyzers import (
+    ReverseAnalyzer,
+    TemplateAnalyzer,
+    URLAnalyzer,
+    ViewAnalyzer,
+)
 from django_deadcode.reporters import ConsoleReporter, JSONReporter, MarkdownReporter
 
 
@@ -49,6 +54,7 @@ class Command(BaseCommand):
         template_analyzer = TemplateAnalyzer()
         url_analyzer = URLAnalyzer()
         view_analyzer = ViewAnalyzer()
+        reverse_analyzer = ReverseAnalyzer()
 
         # Analyze templates
         self.stdout.write("Analyzing templates...")
@@ -68,10 +74,16 @@ class Command(BaseCommand):
             if app_dir.exists():
                 view_analyzer.analyze_all_views(app_dir)
 
+        # Analyze reverse/redirect references
+        self.stdout.write("Analyzing reverse/redirect references...")
+        for app_dir in app_dirs:
+            if app_dir.exists():
+                reverse_analyzer.analyze_all_python_files(app_dir)
+
         # Compile analysis data
         self.stdout.write("Compiling analysis results...")
         analysis_data = self._compile_analysis_data(
-            template_analyzer, url_analyzer, view_analyzer
+            template_analyzer, url_analyzer, view_analyzer, reverse_analyzer
         )
 
         # Generate report
@@ -161,13 +173,16 @@ class Command(BaseCommand):
             template_analyzer: Template analyzer instance
             url_analyzer: URL analyzer instance
             view_analyzer: View analyzer instance
+            reverse_analyzer: Reverse analyzer instance
 
         Returns:
             Dictionary containing compiled analysis data
         """
-        # Get all URL names and referenced URLs
+        # Get all URL names and combine referenced URLs from templates and Python code
         all_url_names = url_analyzer.get_all_url_names()
-        referenced_urls = template_analyzer.get_referenced_urls()
+        template_refs = template_analyzer.get_referenced_urls()
+        reverse_refs = reverse_analyzer.get_referenced_urls()
+        referenced_urls = template_refs | reverse_refs
         unreferenced_urls = url_analyzer.get_unreferenced_urls(referenced_urls)
 
         # Get template data
@@ -198,6 +213,7 @@ class Command(BaseCommand):
             "template_relationships": template_relationships,
             "all_urls": list(all_url_names),
             "referenced_urls": list(referenced_urls),
+            "dynamic_url_patterns": list(reverse_analyzer.get_dynamic_patterns()),
         }
 
         return analysis_data
