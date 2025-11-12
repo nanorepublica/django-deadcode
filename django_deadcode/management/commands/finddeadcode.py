@@ -1,7 +1,7 @@
 """Django management command for finding dead code."""
 
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -94,9 +94,7 @@ class Command(BaseCommand):
         output_file = options.get("output")
         if output_file:
             Path(output_file).write_text(report, encoding="utf-8")
-            self.stdout.write(
-                self.style.SUCCESS(f"Report written to: {output_file}")
-            )
+            self.stdout.write(self.style.SUCCESS(f"Report written to: {output_file}"))
         else:
             self.stdout.write("\n" + report)
 
@@ -166,7 +164,7 @@ class Command(BaseCommand):
         url_analyzer: URLAnalyzer,
         view_analyzer: ViewAnalyzer,
         reverse_analyzer: ReverseAnalyzer,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compile analysis data from all analyzers.
 
@@ -219,9 +217,7 @@ class Command(BaseCommand):
 
         return analysis_data
 
-    def _generate_report(
-        self, analysis_data: Dict[str, Any], format: str
-    ) -> str:
+    def _generate_report(self, analysis_data: dict[str, Any], format: str) -> str:
         """
         Generate report in specified format.
 
@@ -241,7 +237,7 @@ class Command(BaseCommand):
 
         return reporter.generate_report(analysis_data)
 
-    def _print_summary(self, analysis_data: Dict[str, Any]) -> None:
+    def _print_summary(self, analysis_data: dict[str, Any]) -> None:
         """
         Print a summary of the analysis.
 
@@ -273,6 +269,4 @@ class Command(BaseCommand):
             )
 
         if unreferenced_count == 0 and unused_templates_count == 0:
-            self.stdout.write(
-                self.style.SUCCESS("✓ No obvious dead code detected!")
-            )
+            self.stdout.write(self.style.SUCCESS("✓ No obvious dead code detected!"))

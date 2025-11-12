@@ -3,10 +3,6 @@
 import tempfile
 from pathlib import Path
 
-import pytest
-from django.core.management import call_command
-from django.test import override_settings
-
 from django_deadcode.analyzers import ReverseAnalyzer, TemplateAnalyzer, URLAnalyzer
 
 
@@ -71,7 +67,7 @@ def another_view(request):
 
     def test_combined_template_and_reverse_refs(self):
         """
-        Test that URLs referenced in both templates and reverse() calls are correctly handled.
+        Test URLs referenced in both templates and reverse() calls.
 
         Some URLs are in templates, some in reverse() calls, some in both.
         All should be excluded from unreferenced list.
@@ -151,7 +147,8 @@ def view2(request):
 
     def test_dynamic_patterns_not_marked_as_referenced(self):
         """
-        Test that dynamic URL patterns (f-strings, etc.) are flagged but not marked as referenced.
+        Test that dynamic URL patterns (f-strings, etc.) are flagged but not
+        marked as referenced.
         """
         with tempfile.TemporaryDirectory() as temp_dir:
             base_path = Path(temp_dir)
@@ -193,7 +190,10 @@ def concatenation_view(request, prefix):
 
             # Verify dynamic patterns were flagged, not added to referenced
             assert len(dynamic_patterns) > 0
-            assert "<dynamic:f-string>" in dynamic_patterns or "<dynamic:concatenation>" in dynamic_patterns
+            assert (
+                "<dynamic:f-string>" in dynamic_patterns
+                or "<dynamic:concatenation>" in dynamic_patterns
+            )
 
             # Verify dynamic URLs were NOT added to referenced
             # (We can't know the exact URL names, so we just check the count)
@@ -284,7 +284,8 @@ def do_something():
             # Get unreferenced URLs
             unreferenced = url_analyzer.get_unreferenced_urls(referenced_urls)
 
-            # url1-url4 are referenced in Python, so only url5 and migration-url are unreferenced
+            # url1-url4 are referenced in Python, so only url5 and
+            # migration-url are unreferenced
             assert "url1" not in unreferenced
             assert "url2" not in unreferenced
             assert "url3" not in unreferenced

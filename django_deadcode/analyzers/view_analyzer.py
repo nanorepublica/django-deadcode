@@ -1,12 +1,7 @@
 """Analyzer for discovering views and their template usage."""
 
 import ast
-import inspect
 from pathlib import Path
-from typing import Dict, List, Optional, Set
-
-from django.apps import apps
-from django.views.generic import TemplateView
 
 
 class ViewAnalyzer:
@@ -14,9 +9,9 @@ class ViewAnalyzer:
 
     def __init__(self) -> None:
         """Initialize the view analyzer."""
-        self.views: Dict[str, Dict] = {}
-        self.view_templates: Dict[str, Set[str]] = {}
-        self.template_usage: Dict[str, Set[str]] = {}
+        self.views: dict[str, dict] = {}
+        self.view_templates: dict[str, set[str]] = {}
+        self.template_usage: dict[str, set[str]] = {}
 
     def analyze_view_file(self, file_path: Path) -> None:
         """
@@ -29,7 +24,7 @@ class ViewAnalyzer:
             content = file_path.read_text(encoding="utf-8")
             tree = ast.parse(content, filename=str(file_path))
             self._process_ast(tree, str(file_path))
-        except (IOError, SyntaxError, UnicodeDecodeError):
+        except (OSError, SyntaxError, UnicodeDecodeError):
             # Skip files that can't be parsed
             pass
 
@@ -67,9 +62,7 @@ class ViewAnalyzer:
                     self._add_template_reference(file_path, template_name)
 
         # Also check for render_to_response
-        elif (
-            isinstance(node.func, ast.Name) and node.func.id == "render_to_response"
-        ):
+        elif isinstance(node.func, ast.Name) and node.func.id == "render_to_response":
             if node.args and isinstance(node.args[0], ast.Constant):
                 template_name = node.args[0].value
                 if isinstance(template_name, str):
@@ -130,7 +123,7 @@ class ViewAnalyzer:
                 continue
             self.analyze_view_file(py_file)
 
-    def get_templates_for_view(self, view_path: str) -> Set[str]:
+    def get_templates_for_view(self, view_path: str) -> set[str]:
         """
         Get all templates used by a specific view.
 
@@ -142,7 +135,7 @@ class ViewAnalyzer:
         """
         return self.view_templates.get(view_path, set())
 
-    def get_views_for_template(self, template_name: str) -> Set[str]:
+    def get_views_for_template(self, template_name: str) -> set[str]:
         """
         Get all views that use a specific template.
 
@@ -154,7 +147,7 @@ class ViewAnalyzer:
         """
         return self.template_usage.get(template_name, set())
 
-    def get_unused_templates(self, all_templates: Set[str]) -> Set[str]:
+    def get_unused_templates(self, all_templates: set[str]) -> set[str]:
         """
         Find templates that are never referenced by views.
 
@@ -167,7 +160,7 @@ class ViewAnalyzer:
         referenced_templates = set(self.template_usage.keys())
         return all_templates - referenced_templates
 
-    def get_all_view_templates(self) -> Dict[str, Set[str]]:
+    def get_all_view_templates(self) -> dict[str, set[str]]:
         """
         Get all view-to-template mappings.
 
@@ -176,7 +169,7 @@ class ViewAnalyzer:
         """
         return self.view_templates
 
-    def get_template_statistics(self) -> Dict:
+    def get_template_statistics(self) -> dict:
         """
         Get statistics about template usage.
 
@@ -187,7 +180,6 @@ class ViewAnalyzer:
             "total_views": len(self.view_templates),
             "total_templates_referenced": len(self.template_usage),
             "templates_per_view": {
-                view: len(templates)
-                for view, templates in self.view_templates.items()
+                view: len(templates) for view, templates in self.view_templates.items()
             },
         }

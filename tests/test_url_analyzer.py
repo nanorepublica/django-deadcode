@@ -1,7 +1,6 @@
 """Tests for the URL analyzer."""
 
 import pytest
-from django.test import override_settings
 
 from django_deadcode.analyzers import URLAnalyzer
 

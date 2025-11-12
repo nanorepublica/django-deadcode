@@ -3,8 +3,6 @@
 import tempfile
 from pathlib import Path
 
-import pytest
-
 from django_deadcode.analyzers import ViewAnalyzer
 
 
@@ -21,9 +19,7 @@ from django.shortcuts import render
 def my_view(request):
     return render(request, 'myapp/template.html', context)
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)
@@ -46,9 +42,7 @@ from django.views.generic import TemplateView
 class MyView(TemplateView):
     template_name = 'myapp/cbv_template.html'
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             f.flush()
             temp_path = Path(f.name)

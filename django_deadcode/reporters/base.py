@@ -2,14 +2,14 @@
 
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
 
 
 class BaseReporter(ABC):
     """Base class for all reporters."""
 
     @abstractmethod
-    def generate_report(self, analysis_data: Dict[str, Any]) -> str:
+    def generate_report(self, analysis_data: dict[str, Any]) -> str:
         """
         Generate a report from analysis data.
 
@@ -25,7 +25,7 @@ class BaseReporter(ABC):
 class ConsoleReporter(BaseReporter):
     """Reporter that outputs to console in human-readable format."""
 
-    def generate_report(self, analysis_data: Dict[str, Any]) -> str:
+    def generate_report(self, analysis_data: dict[str, Any]) -> str:
         """Generate a console-friendly report."""
         lines = []
         lines.append("=" * 80)
@@ -40,12 +40,8 @@ class ConsoleReporter(BaseReporter):
         lines.append(f"Total URL patterns: {summary.get('total_urls', 0)}")
         lines.append(f"Total templates analyzed: {summary.get('total_templates', 0)}")
         lines.append(f"Total views found: {summary.get('total_views', 0)}")
-        lines.append(
-            f"Unreferenced URLs: {summary.get('unreferenced_urls_count', 0)}"
-        )
-        lines.append(
-            f"Unused templates: {summary.get('unused_templates_count', 0)}"
-        )
+        lines.append(f"Unreferenced URLs: {summary.get('unreferenced_urls_count', 0)}")
+        lines.append(f"Unused templates: {summary.get('unused_templates_count', 0)}")
         lines.append("")
 
         # Unreferenced URLs
@@ -98,7 +94,8 @@ class ConsoleReporter(BaseReporter):
             lines.append("POTENTIALLY UNUSED TEMPLATES")
             lines.append("-" * 80)
             lines.append(
-                "These templates are not directly referenced by views (may be included/extended):"
+                "These templates are not directly referenced by views "
+                "(may be included/extended):"
             )
             lines.append("")
             for template in sorted(unused_templates):
@@ -137,7 +134,7 @@ class ConsoleReporter(BaseReporter):
 class JSONReporter(BaseReporter):
     """Reporter that outputs JSON format."""
 
-    def generate_report(self, analysis_data: Dict[str, Any]) -> str:
+    def generate_report(self, analysis_data: dict[str, Any]) -> str:
         """Generate a JSON report."""
         # Convert sets to lists for JSON serialization
         serializable_data = self._make_serializable(analysis_data)
@@ -166,7 +163,7 @@ class JSONReporter(BaseReporter):
 class MarkdownReporter(BaseReporter):
     """Reporter that outputs Markdown format."""
 
-    def generate_report(self, analysis_data: Dict[str, Any]) -> str:
+    def generate_report(self, analysis_data: dict[str, Any]) -> str:
         """Generate a Markdown report."""
         lines = []
         lines.append("# Django Dead Code Analysis Report")
@@ -213,7 +210,8 @@ class MarkdownReporter(BaseReporter):
             lines.append("## Potentially Unused Templates")
             lines.append("")
             lines.append(
-                "These templates are not directly referenced by views (may be included/extended):"
+                "These templates are not directly referenced by views "
+                "(may be included/extended):"
             )
             lines.append("")
             for template in sorted(unused_templates):
