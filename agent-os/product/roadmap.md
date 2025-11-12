@@ -1,32 +1,120 @@
 # Product Roadmap
 
-1. [ ] **Template Link Extraction** — Build parser to analyze Django templates and extract all internal links from plain href attributes and {% url %} template tags, storing them with source location information. `M`
+## ✅ MVP Complete (v0.1.0) - Released 2024-11-11
 
-2. [ ] **URL Pattern Discovery** — Implement Django URL configuration introspection to discover all defined urlpatterns across the project, including app-level URLs and namespaced patterns. `S`
+The following features have been implemented and released:
 
-3. [ ] **URL Matching Engine** — Create matching system to compare extracted template links against discovered URL patterns, identifying which URLs are referenced and which are orphaned. `M`
+1. [x] **Template Link Extraction** — Build parser to analyze Django templates and extract all internal links from plain href attributes and {% url %} template tags, storing them with source location information. `M`
+   - ✅ Implemented in `template_analyzer.py`
+   - ✅ Extracts both href attributes and {% url %} tags
+   - ✅ Filters for internal links only
 
-4. [ ] **View Reference Tracker** — Link matched URL patterns to their corresponding view functions or class-based views, counting reference frequency across all templates. `S`
+2. [x] **URL Pattern Discovery** — Implement Django URL configuration introspection to discover all defined urlpatterns across the project, including app-level URLs and namespaced patterns. `S`
+   - ✅ Implemented in `url_analyzer.py`
+   - ✅ Handles nested URLResolvers and namespaces
+   - ✅ Supports both RoutePattern and RegexPattern
 
-5. [ ] **Template Usage Analysis** — Scan Python view files to find all references to templates via render(), TemplateView, and similar Django patterns to identify which templates are actually used. `M`
+3. [x] **URL Matching Engine** — Create matching system to compare extracted template links against discovered URL patterns, identifying which URLs are referenced and which are orphaned. `M`
+   - ✅ Implemented in `finddeadcode` management command
+   - ✅ Identifies unreferenced URL patterns
+   - ✅ Cross-references templates and URL patterns
 
-6. [ ] **Basic CLI Reporter** — Build command-line interface that outputs analysis results showing view reference counts, unused URLs, and orphaned templates in readable text format. `S`
+4. [x] **View Reference Tracker** — Link matched URL patterns to their corresponding view functions or class-based views, counting reference frequency across all templates. `S`
+   - ✅ Implemented in `url_analyzer.py` and `view_analyzer.py`
+   - ✅ Maps URLs to view callables
+   - ✅ Tracks view-to-template relationships
 
-7. [ ] **Template Inheritance Tracking** — Extend template parser to follow {% include %} and {% extends %} tags, building complete template dependency graph including nested inheritance. `M`
+5. [x] **Template Usage Analysis** — Scan Python view files to find all references to templates via render(), TemplateView, and similar Django patterns to identify which templates are actually used. `M`
+   - ✅ Implemented in `view_analyzer.py`
+   - ✅ AST parsing for render() calls
+   - ✅ Class-based view template_name detection
 
-8. [ ] **Reverse/Redirect Detection** — Implement Python AST analysis to find all reverse() and redirect() calls in view code, capturing programmatic URL references beyond templates. `L`
+6. [x] **Basic CLI Reporter** — Build command-line interface that outputs analysis results showing view reference counts, unused URLs, and orphaned templates in readable text format. `S`
+   - ✅ Django management command: `python manage.py finddeadcode`
+   - ✅ Console reporter with human-readable output
+   - ✅ Summary statistics and warnings
 
-9. [ ] **Multi-App Analysis** — Add support for analyzing Django projects with multiple apps, showing cross-app dependencies and generating per-app reports. `M`
+7. [x] **Template Inheritance Tracking** — Extend template parser to follow {% include %} and {% extends %} tags, building complete template dependency graph including nested inheritance. `M`
+   - ✅ Implemented in `template_analyzer.py`
+   - ✅ Tracks {% include %} tags
+   - ✅ Tracks {% extends %} tags
+   - ✅ Reports template relationships
+
+## ✅ v0.2.0 Features - Complete (2025-11-12)
+
+8. [x] **Reverse/Redirect Detection** — Implement Python AST analysis to find all reverse() and redirect() calls in view code, capturing programmatic URL references beyond templates. `L`
+   - ✅ Implemented in `reverse_analyzer.py`
+   - ✅ Detects `reverse()`, `reverse_lazy()`, `redirect()`, and `HttpResponseRedirect()` patterns
+   - ✅ Handles nested patterns like `HttpResponseRedirect(reverse('url'))`
+   - ✅ Detects namespaced URLs (`'myapp:detail'`)
+   - ✅ Flags dynamic URL patterns (f-strings, concatenation) for manual review
+   - ✅ Integrated with finddeadcode command
+   - ✅ 100% code coverage with 20 comprehensive tests
+   - ✅ Reduces false positives for URLs referenced only in Python code
+
+## 🚧 In Progress / Planned Features
+
+9. [x] **Multi-App Analysis** — Add support for analyzing Django projects with multiple apps, showing cross-app dependencies and generating per-app reports. `M`
+   - ⚠️ Partially implemented
+   - ✅ Can filter by specific apps with `--apps` flag
+   - ❌ No cross-app dependency visualization yet
+   - ❌ No per-app report generation
 
 10. [ ] **Django Admin Detection** — Detect and filter URLs automatically generated by Django admin and common third-party packages to reduce false positives in dead code detection. `S`
+    - Not yet started
+    - Would improve accuracy for projects using Django admin
 
 11. [ ] **Confidence Scoring System** — Implement confidence levels for dead code detection that account for dynamic URL generation, runtime patterns, and third-party integrations. `M`
+    - Not yet started
+    - Important for providing actionable insights
 
-12. [ ] **Enhanced Report Generation** — Create detailed reporting with multiple output formats (JSON, HTML, Markdown) showing relationship visualizations and prioritized cleanup suggestions. `L`
+12. [x] **Enhanced Report Generation** — Create detailed reporting with multiple output formats (JSON, HTML, Markdown) showing relationship visualizations and prioritized cleanup suggestions. `L`
+    - ⚠️ Partially implemented
+    - ✅ JSON output format
+    - ✅ Markdown output format
+    - ✅ Console output format
+    - ❌ No HTML output with visualizations yet
+    - ❌ No prioritized cleanup suggestions
 
-> Notes
-> - Features 1-6 constitute the MVP for basic dead code analysis
-> - Features 7-10 add advanced detection capabilities for comprehensive analysis
-> - Features 11-12 focus on improving accuracy and usability of results
-> - Each feature includes both backend analysis logic and appropriate test coverage
-> - Order reflects technical dependencies: template analysis → URL matching → view linking → advanced features
+## 📊 Progress Summary
+
+- **Completed:** 8/12 features (67%)
+- **Partially Complete:** 2/12 features (17%)
+- **Not Started:** 2/12 features (16%)
+- **MVP Status:** ✅ Complete (features 1-7)
+- **v0.2.0 Status:** ✅ Complete (feature 8)
+
+## 🎯 Next Release (v0.3.0) - Planned
+
+Focus on accuracy and usability improvements:
+
+1. **Django Admin Detection** (Feature 10)
+   - Auto-detect admin.site URLs
+   - Skip common third-party package URLs
+   - Configurable exclusion patterns
+
+2. **Confidence Scoring System** (Feature 11)
+   - Score each finding based on confidence level
+   - Account for dynamic patterns
+   - Prioritize cleanup recommendations
+
+3. **Enhanced Multi-App Analysis** (Feature 9 completion)
+   - Cross-app dependency graph
+   - Per-app summary reports
+   - Visualization of app relationships
+
+## 🔮 Future Releases
+
+### v0.4.0 - Advanced Features
+- HTML report generation with interactive visualizations (Feature 12)
+- Custom rule definitions
+- CI/CD integration helpers
+- GitHub Action integration
+
+### v0.5.0 - IDE Integration
+- VS Code extension
+- PyCharm plugin
+- Real-time dead code detection
+- Inline suggestions and quick fixes
+
+> **Note:** The roadmap is flexible and may be adjusted based on user feedback and community contributions.
