@@ -58,28 +58,6 @@ class TestTemplateAnalyzer:
 
         assert "base.html" in result["extends"]
 
-    def test_find_templates(self):
-        """Test finding template files in directory."""
-        analyzer = TemplateAnalyzer()
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmppath = Path(tmpdir)
-
-            # Create some template files
-            (tmppath / "test1.html").write_text("<html></html>")
-            (tmppath / "test2.html").write_text("<html></html>")
-            (tmppath / "test.txt").write_text("text")
-            (tmppath / "other.py").write_text("# python")
-
-            templates = analyzer.find_all_templates(tmppath)
-
-            # Should find HTML and TXT files, not PY
-            template_names = [t.name for t in templates]
-            assert "test1.html" in template_names
-            assert "test2.html" in template_names
-            assert "test.txt" in template_names
-            assert "other.py" not in template_names
-
     def test_get_unused_url_names(self):
         """Test finding unused URL names."""
         analyzer = TemplateAnalyzer()
@@ -98,3 +76,129 @@ class TestTemplateAnalyzer:
         assert "unused" in unused
         assert "home" not in unused
         assert "about" not in unused
+
+    def test_base_dir_filtering_includes_templates_inside(self):
+        """Test that templates inside BASE_DIR are included."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            base_dir = tmppath
+
+            # Create template inside BASE_DIR
+            (tmppath / "test.html").write_text("<html>{% url 'home' %}</html>")
+
+            analyzer = TemplateAnalyzer([tmppath], base_dir=base_dir)
+            analyzer.find_all_templates()
+
+            # Should find the template
+            assert len(analyzer.templates) == 1
+            assert any("test.html" in key for key in analyzer.templates.keys())
+
+    def test_base_dir_filtering_excludes_templates_outside(self):
+        """Test that templates outside BASE_DIR are excluded."""
+        with tempfile.TemporaryDirectory() as tmpdir1:
+            with tempfile.TemporaryDirectory() as tmpdir2:
+                tmppath1 = Path(tmpdir1)
+                tmppath2 = Path(tmpdir2)
+
+                # tmppath1 is BASE_DIR
+                base_dir = tmppath1
+
+                # Create template outside BASE_DIR
+                (tmppath2 / "test.html").write_text("<html>{% url 'home' %}</html>")
+
+                # Analyzer with template_dirs pointing to tmppath2 but BASE_DIR as tmppath1
+                analyzer = TemplateAnalyzer([tmppath2], base_dir=base_dir)
+                analyzer.find_all_templates()
+
+                # Should not find any templates
+                assert len(analyzer.templates) == 0
+
+    def test_symlink_preserves_original_path(self):
+        """Test that symlinks preserve the original path."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            base_dir = tmppath
+
+            # Create a real template
+            real_template = tmppath / "real.html"
+            real_template.write_text("<html>{% url 'home' %}</html>")
+
+            # Create a symlink to the template
+            symlink = tmppath / "link.html"
+            symlink.symlink_to(real_template)
+
+            analyzer = TemplateAnalyzer([tmppath], base_dir=base_dir)
+            analyzer.find_all_templates()
+
+            # Should find both templates with their original paths
+            template_paths = list(analyzer.templates.keys())
+            assert len(template_paths) == 2
+
+            # Check that at least one path contains "link.html"
+            assert any("link.html" in str(path) for path in template_paths)
+
+    def test_template_analyzer_with_no_base_dir(self):
+        """Test that analyzer works without BASE_DIR (backward compatibility)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+
+            # Create template
+            (tmppath / "test.html").write_text("<html>{% url 'home' %}</html>")
+
+            # Analyzer without BASE_DIR
+            analyzer = TemplateAnalyzer([tmppath])
+            analyzer.find_all_templates()
+
+            # Should find the template
+            assert len(analyzer.templates) == 1
+
+    def test_is_relative_to_helper(self):
+        """Test the _is_relative_to helper method for Python 3.8 compatibility."""
+        analyzer = TemplateAnalyzer()
+
+        parent = Path("/home/user/project")
+        child = Path("/home/user/project/templates/test.html")
+        unrelated = Path("/var/www/templates/test.html")
+
+        assert analyzer._is_relative_to(child, parent) is True
+        assert analyzer._is_relative_to(unrelated, parent) is False
+        assert analyzer._is_relative_to(parent, parent) is True
+
+    def test_find_all_templates_with_multiple_extensions(self):
+        """Test finding templates with different extensions."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmppath = Path(tmpdir)
+            base_dir = tmppath
+
+            # Create templates with different extensions
+            (tmppath / "test1.html").write_text("<html></html>")
+            (tmppath / "test2.txt").write_text("text")
+            (tmppath / "test3.xml").write_text("<xml></xml>")
+            (tmppath / "test4.svg").write_text("<svg></svg>")
+            (tmppath / "test5.py").write_text("# python")
+
+            analyzer = TemplateAnalyzer([tmppath], base_dir=base_dir)
+            analyzer.find_all_templates()
+
+            # Should find HTML, TXT, XML, SVG but not PY
+            assert len(analyzer.templates) == 4
+
+    def test_template_relationships_extraction(self):
+        """Test extraction of template relationships."""
+        analyzer = TemplateAnalyzer()
+
+        # Template with includes and extends
+        content = """
+        {% extends 'base.html' %}
+        {% include 'header.html' %}
+        {% include 'footer.html' %}
+        """
+        analyzer._analyze_template_content(content, "test.html")
+
+        relationships = analyzer.get_template_relationships()
+
+        assert "test.html" in relationships["includes"]
+        assert "header.html" in relationships["includes"]["test.html"]
+        assert "footer.html" in relationships["includes"]["test.html"]
+        assert "test.html" in relationships["extends"]
+        assert "base.html" in relationships["extends"]["test.html"]

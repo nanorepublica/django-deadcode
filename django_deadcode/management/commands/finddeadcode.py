@@ -1,10 +1,10 @@
 """Django management command for finding dead code."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Set
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from django_deadcode.analyzers import (
     ReverseAnalyzer,
@@ -45,23 +45,30 @@ class Command(BaseCommand):
             nargs="+",
             help="Specific apps to analyze (default: all installed apps)",
         )
+        parser.add_argument(
+            "--show-template-relationships",
+            action="store_true",
+            default=False,
+            help="Show template include/extends relationships in output",
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Execute the command."""
         self.stdout.write(self.style.SUCCESS("Starting dead code analysis..."))
 
+        # Get BASE_DIR for template filtering
+        base_dir = self._get_base_dir()
+
         # Initialize analyzers
-        template_analyzer = TemplateAnalyzer()
+        template_dirs = self._get_template_dirs(options.get("templates_dir"))
+        template_analyzer = TemplateAnalyzer(template_dirs, base_dir=base_dir)
         url_analyzer = URLAnalyzer()
         view_analyzer = ViewAnalyzer()
         reverse_analyzer = ReverseAnalyzer()
 
         # Analyze templates
         self.stdout.write("Analyzing templates...")
-        template_dirs = self._get_template_dirs(options.get("templates_dir"))
-        for template_dir in template_dirs:
-            if template_dir.exists():
-                template_analyzer.analyze_all_templates(template_dir)
+        template_analyzer.find_all_templates()
 
         # Analyze URLs
         self.stdout.write("Analyzing URL patterns...")
@@ -88,7 +95,8 @@ class Command(BaseCommand):
 
         # Generate report
         report_format = options.get("format", "console")
-        report = self._generate_report(analysis_data, report_format)
+        show_relationships = options.get("show_template_relationships", False)
+        report = self._generate_report(analysis_data, report_format, show_relationships)
 
         # Output report
         output_file = options.get("output")
@@ -100,6 +108,21 @@ class Command(BaseCommand):
 
         # Print summary
         self._print_summary(analysis_data)
+
+    def _get_base_dir(self) -> Path:
+        """
+        Get the BASE_DIR from Django settings.
+
+        Returns:
+            Path object for BASE_DIR
+
+        Raises:
+            CommandError: If BASE_DIR is not found in Django settings
+        """
+        base_dir = getattr(settings, "BASE_DIR", None)
+        if base_dir is None:
+            raise CommandError("BASE_DIR not found in Django settings")
+        return Path(base_dir).resolve()
 
     def _get_template_dirs(self, custom_dir: str = None) -> list[Path]:
         """
@@ -158,6 +181,51 @@ class Command(BaseCommand):
 
         return app_dirs
 
+    def _find_transitively_referenced_templates(
+        self,
+        directly_referenced: Set[str],
+        template_includes: Dict[str, Set[str]],
+        template_extends: Dict[str, Set[str]],
+    ) -> Set[str]:
+        """
+        Find all templates transitively referenced through include/extends.
+
+        Args:
+            directly_referenced: Templates directly referenced by views
+            template_includes: Map of template -> set of included templates
+            template_extends: Map of template -> set of extended templates
+
+        Returns:
+            Set of all transitively referenced templates
+        """
+        transitively_referenced = set()
+        to_process = list(directly_referenced)
+        processed = set()
+
+        while to_process:
+            current = to_process.pop()
+
+            # Skip if already processed to avoid infinite loops
+            if current in processed:
+                continue
+            processed.add(current)
+
+            # Add included templates
+            if current in template_includes:
+                for included in template_includes[current]:
+                    if included not in transitively_referenced:
+                        transitively_referenced.add(included)
+                        to_process.append(included)
+
+            # Add extended templates
+            if current in template_extends:
+                for extended in template_extends[current]:
+                    if extended not in transitively_referenced:
+                        transitively_referenced.add(extended)
+                        to_process.append(extended)
+
+        return transitively_referenced
+
     def _compile_analysis_data(
         self,
         template_analyzer: TemplateAnalyzer,
@@ -188,12 +256,24 @@ class Command(BaseCommand):
         all_templates = set(template_analyzer.templates.keys())
         template_usage = view_analyzer.get_all_view_templates()
 
-        # Get potentially unused templates (not referenced by views)
+        # Get directly referenced templates (from views)
         directly_referenced_templates = set(view_analyzer.template_usage.keys())
-        potentially_unused = all_templates - directly_referenced_templates
 
         # Get template relationships
         template_relationships = template_analyzer.get_template_relationships()
+
+        # Find transitively referenced templates (via include/extends)
+        transitively_referenced = self._find_transitively_referenced_templates(
+            directly_referenced_templates,
+            template_relationships.get("includes", {}),
+            template_relationships.get("extends", {}),
+        )
+
+        # All referenced templates
+        all_referenced = directly_referenced_templates | transitively_referenced
+
+        # Potentially unused templates
+        potentially_unused = all_templates - all_referenced
 
         # Compile data
         analysis_data = {
@@ -217,23 +297,26 @@ class Command(BaseCommand):
 
         return analysis_data
 
-    def _generate_report(self, analysis_data: dict[str, Any], format: str) -> str:
+    def _generate_report(
+        self, analysis_data: dict[str, Any], format: str, show_relationships: bool
+    ) -> str:
         """
         Generate report in specified format.
 
         Args:
             analysis_data: Compiled analysis data
             format: Output format
+            show_relationships: Whether to show template relationships
 
         Returns:
             Formatted report string
         """
         if format == "json":
-            reporter = JSONReporter()
+            reporter = JSONReporter(show_template_relationships=show_relationships)
         elif format == "markdown":
-            reporter = MarkdownReporter()
+            reporter = MarkdownReporter(show_template_relationships=show_relationships)
         else:
-            reporter = ConsoleReporter()
+            reporter = ConsoleReporter(show_template_relationships=show_relationships)
 
         return reporter.generate_report(analysis_data)
 
