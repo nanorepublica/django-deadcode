@@ -1,7 +1,7 @@
 """Django management command for finding dead code."""
 
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -153,7 +153,7 @@ class Command(BaseCommand):
         template_analyzer: TemplateAnalyzer,
         url_analyzer: URLAnalyzer,
         view_analyzer: ViewAnalyzer,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compile analysis data from all analyzers.
 
@@ -203,7 +203,7 @@ class Command(BaseCommand):
         return analysis_data
 
     def _generate_report(
-        self, analysis_data: Dict[str, Any], format: str
+        self, analysis_data: dict[str, Any], format: str
     ) -> str:
         """
         Generate report in specified format.
@@ -224,7 +224,7 @@ class Command(BaseCommand):
 
         return reporter.generate_report(analysis_data)
 
-    def _print_summary(self, analysis_data: Dict[str, Any]) -> None:
+    def _print_summary(self, analysis_data: dict[str, Any]) -> None:
         """
         Print a summary of the analysis.
 

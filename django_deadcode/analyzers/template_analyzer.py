@@ -2,10 +2,6 @@
 
 import re
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
-
-from django.template import Template, TemplateSyntaxError
-from django.template.loader import get_template
 
 
 class TemplateAnalyzer:
@@ -19,12 +15,12 @@ class TemplateAnalyzer:
 
     def __init__(self) -> None:
         """Initialize the template analyzer."""
-        self.templates: Dict[str, Dict] = {}
-        self.url_references: Dict[str, Set[str]] = {}
-        self.template_includes: Dict[str, Set[str]] = {}
-        self.template_extends: Dict[str, Set[str]] = {}
+        self.templates: dict[str, dict] = {}
+        self.url_references: dict[str, set[str]] = {}
+        self.template_includes: dict[str, set[str]] = {}
+        self.template_extends: dict[str, set[str]] = {}
 
-    def analyze_template_file(self, template_path: Path) -> Dict:
+    def analyze_template_file(self, template_path: Path) -> dict:
         """
         Analyze a single template file.
 
@@ -36,7 +32,7 @@ class TemplateAnalyzer:
         """
         try:
             content = template_path.read_text(encoding="utf-8")
-        except (IOError, UnicodeDecodeError) as e:
+        except (OSError, UnicodeDecodeError) as e:
             return {
                 "error": str(e),
                 "urls": set(),
@@ -47,7 +43,7 @@ class TemplateAnalyzer:
 
         return self._analyze_template_content(content, str(template_path))
 
-    def _analyze_template_content(self, content: str, template_name: str) -> Dict:
+    def _analyze_template_content(self, content: str, template_name: str) -> dict:
         """
         Analyze template content for URL references.
 
@@ -90,7 +86,7 @@ class TemplateAnalyzer:
 
         return result
 
-    def find_all_templates(self, base_path: Path) -> List[Path]:
+    def find_all_templates(self, base_path: Path) -> list[Path]:
         """
         Find all Django template files in a directory.
 
@@ -108,7 +104,7 @@ class TemplateAnalyzer:
 
         return templates
 
-    def analyze_all_templates(self, base_path: Path) -> Dict[str, Dict]:
+    def analyze_all_templates(self, base_path: Path) -> dict[str, dict]:
         """
         Analyze all templates in a directory tree.
 
@@ -125,7 +121,7 @@ class TemplateAnalyzer:
 
         return self.templates
 
-    def get_url_references_by_template(self) -> Dict[str, Set[str]]:
+    def get_url_references_by_template(self) -> dict[str, set[str]]:
         """
         Get all URL references grouped by template.
 
@@ -134,7 +130,7 @@ class TemplateAnalyzer:
         """
         return self.url_references
 
-    def get_template_relationships(self) -> Dict[str, Dict[str, Set[str]]]:
+    def get_template_relationships(self) -> dict[str, dict[str, set[str]]]:
         """
         Get template inheritance and inclusion relationships.
 
@@ -143,7 +139,7 @@ class TemplateAnalyzer:
         """
         return {"includes": self.template_includes, "extends": self.template_extends}
 
-    def get_unused_url_names(self, defined_url_names: Set[str]) -> Set[str]:
+    def get_unused_url_names(self, defined_url_names: set[str]) -> set[str]:
         """
         Find URL names that are defined but never referenced in templates.
 
@@ -159,7 +155,7 @@ class TemplateAnalyzer:
 
         return defined_url_names - referenced_urls
 
-    def get_referenced_urls(self) -> Set[str]:
+    def get_referenced_urls(self) -> set[str]:
         """
         Get all URL names referenced across all templates.
 

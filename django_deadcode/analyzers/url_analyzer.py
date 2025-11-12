@@ -1,13 +1,9 @@
 """Analyzer for discovering and analyzing Django URL patterns."""
 
-import importlib
-import sys
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.urls import URLPattern, URLResolver, get_resolver
-from django.urls.resolvers import RoutePattern, RegexPattern
+from django.urls.resolvers import RegexPattern, RoutePattern
 
 
 class URLAnalyzer:
@@ -15,11 +11,11 @@ class URLAnalyzer:
 
     def __init__(self) -> None:
         """Initialize the URL analyzer."""
-        self.url_patterns: Dict[str, Dict] = {}
-        self.url_names: Set[str] = set()
-        self.url_to_view: Dict[str, str] = {}
+        self.url_patterns: dict[str, dict] = {}
+        self.url_names: set[str] = set()
+        self.url_to_view: dict[str, str] = {}
 
-    def analyze_url_patterns(self, urlconf: Optional[str] = None) -> Dict[str, Dict]:
+    def analyze_url_patterns(self, urlconf: str | None = None) -> dict[str, dict]:
         """
         Analyze all URL patterns in the project.
 
@@ -38,7 +34,7 @@ class URLAnalyzer:
         return self.url_patterns
 
     def _process_url_patterns(
-        self, patterns: List, prefix: str = "", namespace: Optional[str] = None
+        self, patterns: list, prefix: str = "", namespace: str | None = None
     ) -> None:
         """
         Recursively process URL patterns.
@@ -65,7 +61,7 @@ class URLAnalyzer:
                 self._process_url_pattern(pattern, prefix, namespace)
 
     def _process_url_pattern(
-        self, pattern: URLPattern, prefix: str, namespace: Optional[str]
+        self, pattern: URLPattern, prefix: str, namespace: str | None
     ) -> None:
         """
         Process a single URL pattern.
@@ -110,7 +106,7 @@ class URLAnalyzer:
                 "namespace": namespace,
             }
 
-    def get_all_url_names(self) -> Set[str]:
+    def get_all_url_names(self) -> set[str]:
         """
         Get all URL names defined in the project.
 
@@ -119,7 +115,7 @@ class URLAnalyzer:
         """
         return self.url_names
 
-    def get_view_for_url(self, url_name: str) -> Optional[str]:
+    def get_view_for_url(self, url_name: str) -> str | None:
         """
         Get the view callable for a given URL name.
 
@@ -131,7 +127,7 @@ class URLAnalyzer:
         """
         return self.url_to_view.get(url_name)
 
-    def get_urls_for_view(self, view_name: str) -> List[str]:
+    def get_urls_for_view(self, view_name: str) -> list[str]:
         """
         Get all URL names that point to a specific view.
 
@@ -147,7 +143,7 @@ class URLAnalyzer:
             if view == view_name
         ]
 
-    def get_unreferenced_urls(self, referenced_urls: Set[str]) -> Set[str]:
+    def get_unreferenced_urls(self, referenced_urls: set[str]) -> set[str]:
         """
         Find URL patterns that are never referenced.
 
@@ -159,14 +155,14 @@ class URLAnalyzer:
         """
         return self.url_names - referenced_urls
 
-    def get_url_statistics(self) -> Dict:
+    def get_url_statistics(self) -> dict:
         """
         Get statistics about URL patterns.
 
         Returns:
             Dictionary with URL statistics
         """
-        view_counts: Dict[str, int] = {}
+        view_counts: dict[str, int] = {}
         for view_name in self.url_to_view.values():
             view_counts[view_name] = view_counts.get(view_name, 0) + 1
 
