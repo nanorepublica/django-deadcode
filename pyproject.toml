@@ -57,6 +57,7 @@ exclude = ["tests*"]
 DJANGO_SETTINGS_MODULE = "tests.settings"
 python_files = ["test_*.py", "*_test.py"]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "--cov=django_deadcode --cov-report=html --cov-report=term-missing"
 # Don't require manage.py - this is a Django package, not a project
 django_find_project = false
