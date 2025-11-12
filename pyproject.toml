@@ -7,7 +7,7 @@ name = "django-deadcode"
 version = "0.1.0"
 description = "A Django dead code analysis tool that tracks relationships between templates, URLs, and views"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Your Name", email = "your.email@example.com"}
@@ -16,25 +16,22 @@ keywords = ["django", "dead-code", "static-analysis", "code-quality"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Framework :: Django",
-    "Framework :: Django :: 3.2",
-    "Framework :: Django :: 4.0",
-    "Framework :: Django :: 4.1",
     "Framework :: Django :: 4.2",
     "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Quality Assurance",
 ]
 
 dependencies = [
-    "Django>=3.2",
+    "Django>=4.2",
 ]
 
 [project.optional-dependencies]
@@ -64,12 +61,12 @@ addopts = "--cov=django_deadcode --cov-report=html --cov-report=term-missing"
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py310"
 select = ["E", "F", "I", "N", "W", "UP"]
 ignore = []
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

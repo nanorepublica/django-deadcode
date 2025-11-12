@@ -85,8 +85,8 @@ You can monitor progress in the **Actions** tab of your repository.
 
 Runs on every push and pull request:
 - Lints code with Ruff
-- Tests on Python 3.8-3.12
-- Tests with Django 3.2-5.0
+- Tests on Python 3.10-3.13
+- Tests with Django 4.2 LTS, 5.0, 5.1
 - Builds distribution packages
 - Uploads coverage to Codecov (if configured)
 
