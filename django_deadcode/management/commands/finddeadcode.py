@@ -165,6 +165,7 @@ class Command(BaseCommand):
         template_analyzer: TemplateAnalyzer,
         url_analyzer: URLAnalyzer,
         view_analyzer: ViewAnalyzer,
+        reverse_analyzer: ReverseAnalyzer,
     ) -> dict[str, Any]:
         """
         Compile analysis data from all analyzers.

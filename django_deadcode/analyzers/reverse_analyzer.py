@@ -2,7 +2,6 @@
 
 import ast
 from pathlib import Path
-from typing import Set
 
 
 class ReverseAnalyzer:
@@ -22,8 +21,8 @@ class ReverseAnalyzer:
 
     def __init__(self) -> None:
         """Initialize the reverse analyzer."""
-        self.referenced_urls: Set[str] = set()
-        self.dynamic_patterns: Set[str] = set()
+        self.referenced_urls: set[str] = set()
+        self.dynamic_patterns: set[str] = set()
 
     def analyze_python_file(self, file_path: Path) -> None:
         """
@@ -42,7 +41,7 @@ class ReverseAnalyzer:
             content = file_path.read_text(encoding="utf-8")
             tree = ast.parse(content, filename=str(file_path))
             self._process_ast(tree, str(file_path))
-        except (IOError, SyntaxError, UnicodeDecodeError):
+        except (OSError, SyntaxError, UnicodeDecodeError):
             # Skip files that can't be parsed - don't crash, don't log
             pass
 
@@ -65,7 +64,7 @@ class ReverseAnalyzer:
                 continue
             self.analyze_python_file(py_file)
 
-    def get_referenced_urls(self) -> Set[str]:
+    def get_referenced_urls(self) -> set[str]:
         """
         Get all URL names referenced in the analyzed Python files.
 
@@ -74,7 +73,7 @@ class ReverseAnalyzer:
         """
         return self.referenced_urls
 
-    def get_dynamic_patterns(self) -> Set[str]:
+    def get_dynamic_patterns(self) -> set[str]:
         """
         Get all dynamic URL patterns that need manual review.
 
@@ -163,7 +162,8 @@ class ReverseAnalyzer:
         if url_name is not None:
             if isinstance(url_name, str):
                 self.referenced_urls.add(url_name)
-            # If it's a marker for dynamic pattern, it was already added to dynamic_patterns
+            # If it's a marker for dynamic pattern, it was already added to
+            # dynamic_patterns
 
     def _extract_url_from_http_response_redirect(self, node: ast.Call) -> None:
         """
