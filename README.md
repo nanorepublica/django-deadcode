@@ -7,6 +7,7 @@ A Django dead code analysis tool that tracks relationships between templates, UR
 - **Template Analysis**: Extract URL references from Django templates (href attributes and `{% url %}` tags)
 - **URL Pattern Discovery**: Analyze all URL patterns defined in your Django project
 - **View Tracking**: Identify which templates are used by which views
+- **Python Code Analysis**: Detect `reverse()` and `redirect()` URL references in Python code
 - **Relationship Mapping**: Track template inheritance (extends/includes) and relationships
 - **Multiple Output Formats**: Console, JSON, and Markdown reports
 - **Django Native**: Uses Django's management command structure for seamless integration
@@ -87,13 +88,35 @@ python manage.py finddeadcode --templates-dir /path/to/templates
 
 ### Unreferenced URL Patterns
 
-URL patterns that are defined in `urls.py` but never referenced in any template:
+URL patterns that are defined in `urls.py` but never referenced in templates or Python code:
 
 ```python
 # urls.py - This URL is defined
 path('old-feature/', views.old_feature, name='old_feature'),
 
 # But no template references it with {% url 'old_feature' %}
+# And no Python code uses reverse('old_feature')
+```
+
+### Python Code URL References
+
+Detects URL references in Python code via:
+
+```python
+from django.shortcuts import redirect
+from django.urls import reverse, reverse_lazy
+from django.http import HttpResponseRedirect
+
+# All of these are detected and marked as "referenced"
+def my_view(request):
+    return redirect('url-name')
+
+def another_view(request):
+    url = reverse('url-name')
+    return HttpResponseRedirect(url)
+
+class MyView(UpdateView):
+    success_url = reverse_lazy('url-name')
 ```
 
 ### Unused Templates
@@ -168,13 +191,20 @@ These templates are not directly referenced by views (may be included/extended):
    - `render(request, 'template.html')` calls
    - `template_name = 'template.html'` in class-based views
 
-4. **Relationship Mapping**: Connects templates ↔ URLs ↔ views to identify dead code
+4. **Reverse/Redirect Analysis**: Uses AST parsing to detect:
+   - `reverse('url-name')` calls
+   - `reverse_lazy('url-name')` calls
+   - `redirect('url-name')` calls
+   - `HttpResponseRedirect(reverse('url-name'))` patterns
+   - Dynamic URL patterns (f-strings, concatenation) are flagged for manual review
+
+5. **Relationship Mapping**: Connects templates ↔ URLs ↔ views to identify dead code
 
 ## Limitations
 
 - **Static Analysis Only**: Does not execute code or track runtime behavior
 - **Dynamic Templates**: Cannot detect templates loaded with dynamic names (e.g., `render(request, f'{variable}.html')`)
-- **Dynamic URLs**: Cannot detect URLs generated programmatically
+- **Dynamic URLs**: Cannot automatically detect URLs generated with f-strings or concatenation (but flags them for manual review)
 - **Indirect Usage**: May flag templates used only through includes/extends as "unused"
 - **Third-party Packages**: Analyzes your code only, not installed packages
 
@@ -232,7 +262,6 @@ See [agent-os/product/roadmap.md](agent-os/product/roadmap.md) for the full deve
 ### Planned Features
 
 - Confidence scoring for dead code detection
-- Detection of `reverse()` and `redirect()` calls in Python code
 - Multi-app analysis with cross-app relationship tracking
 - Django admin integration detection
 - HTML report generation with interactive UI
