@@ -13,12 +13,40 @@ class TemplateAnalyzer:
     INCLUDE_PATTERN = re.compile(r'{%\s*include\s+["\']([^"\']+)["\']', re.MULTILINE)
     EXTENDS_PATTERN = re.compile(r'{%\s*extends\s+["\']([^"\']+)["\']', re.MULTILINE)
 
-    def __init__(self) -> None:
-        """Initialize the template analyzer."""
+    def __init__(
+        self, template_dirs: list[Path] | None = None, base_dir: Path | None = None
+    ) -> None:
+        """
+        Initialize the template analyzer.
+
+        Args:
+            template_dirs: List of template directories to search
+            base_dir: Project BASE_DIR for filtering templates (optional)
+        """
+        self.template_dirs = template_dirs or []
+        self.base_dir = base_dir.resolve() if base_dir else None
         self.templates: dict[str, dict] = {}
         self.url_references: dict[str, set[str]] = {}
         self.template_includes: dict[str, set[str]] = {}
         self.template_extends: dict[str, set[str]] = {}
+        self.template_extensions = [".html", ".txt", ".xml", ".svg"]
+
+    def _is_relative_to(self, path: Path, parent: Path) -> bool:
+        """
+        Check if path is relative to parent (compatible with Python 3.8+).
+
+        Args:
+            path: Path to check
+            parent: Parent path
+
+        Returns:
+            True if path is relative to parent, False otherwise
+        """
+        try:
+            path.relative_to(parent)
+            return True
+        except ValueError:
+            return False
 
     def analyze_template_file(self, template_path: Path) -> dict:
         """
@@ -86,23 +114,31 @@ class TemplateAnalyzer:
 
         return result
 
-    def find_all_templates(self, base_path: Path) -> list[Path]:
+    def find_all_templates(self) -> None:
         """
-        Find all Django template files in a directory.
+        Find all template files in configured template directories.
 
-        Args:
-            base_path: Base directory to search
-
-        Returns:
-            List of Path objects for template files
+        Filters templates by BASE_DIR if it was provided during initialization.
         """
-        template_extensions = [".html", ".txt", ".xml", ".svg"]
-        templates = []
+        for template_dir in self.template_dirs:
+            if not template_dir.exists():
+                continue
 
-        for ext in template_extensions:
-            templates.extend(base_path.rglob(f"*{ext}"))
+            for ext in self.template_extensions:
+                for template_path in template_dir.rglob(f"*{ext}"):
+                    # Filter by BASE_DIR if provided
+                    if self.base_dir:
+                        try:
+                            # Use resolved path for comparison
+                            resolved = template_path.resolve()
+                            if not self._is_relative_to(resolved, self.base_dir):
+                                continue
+                        except (ValueError, OSError):
+                            # Skip templates that can't be resolved
+                            continue
 
-        return templates
+                    # Store original path (not resolved)
+                    self.analyze_template_file(template_path)
 
     def analyze_all_templates(self, base_path: Path) -> dict[str, dict]:
         """
@@ -114,9 +150,24 @@ class TemplateAnalyzer:
         Returns:
             Dictionary mapping template paths to their analysis results
         """
-        templates = self.find_all_templates(base_path)
+        template_extensions = [".html", ".txt", ".xml", ".svg"]
+        templates = []
+
+        for ext in template_extensions:
+            templates.extend(base_path.rglob(f"*{ext}"))
 
         for template_path in templates:
+            # Filter by BASE_DIR if provided
+            if self.base_dir:
+                try:
+                    # Use resolved path for comparison
+                    resolved = template_path.resolve()
+                    if not self._is_relative_to(resolved, self.base_dir):
+                        continue
+                except (ValueError, OSError):
+                    # Skip templates that can't be resolved
+                    continue
+
             self.analyze_template_file(template_path)
 
         return self.templates

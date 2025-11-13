@@ -19,6 +19,8 @@ A Django dead code analysis tool that tracks relationships between templates, UR
 - **View Tracking**: Identify which templates are used by which views
 - **Python Code Analysis**: Detect `reverse()` and `redirect()` URL references in Python code
 - **Relationship Mapping**: Track template inheritance (extends/includes) and relationships
+- **Smart Template Detection**: Templates referenced via `{% include %}` or `{% extends %}` are correctly marked as used
+- **Project Boundary Filtering**: Automatically excludes templates from installed packages (outside BASE_DIR)
 - **Multiple Output Formats**: Console, JSON, and Markdown reports
 - **Django Native**: Uses Django's management command structure for seamless integration
 
@@ -94,6 +96,16 @@ python manage.py finddeadcode --apps myapp otherapp
 python manage.py finddeadcode --templates-dir /path/to/templates
 ```
 
+### Show Template Relationships
+
+By default, template include/extends relationships are hidden in reports. To show them:
+
+```bash
+python manage.py finddeadcode --show-template-relationships
+```
+
+This is useful for understanding how templates are connected but can make reports verbose for large projects.
+
 ## What It Detects
 
 ### Unreferenced URL Patterns
@@ -131,13 +143,16 @@ class MyView(UpdateView):
 
 ### Unused Templates
 
-Templates that exist but are not referenced by any view:
+Templates that exist but are not referenced by any view (directly or indirectly through includes/extends):
 
 ```python
 # views.py - No view renders 'unused_template.html'
+# And no other template includes or extends it
 
 # But the file templates/unused_template.html exists
 ```
+
+**Note**: Templates referenced via `{% include %}` or `{% extends %}` are now correctly identified as used, even if not directly referenced by views.
 
 ### Template Relationships
 
@@ -150,6 +165,8 @@ Tracks which templates include or extend other templates:
 {# header.html is included in base.html #}
 {% include 'partials/header.html' %}
 ```
+
+Use the `--show-template-relationships` flag to see these relationships in your report.
 
 ## Example Output
 
@@ -189,34 +206,37 @@ These templates are not directly referenced by views (may be included/extended):
 
 ## How It Works
 
-1. **Template Analysis**: Scans all template files for:
+1. **Template Analysis**: Scans all template files **within your project's BASE_DIR** for:
    - `{% url 'name' %}` tags
    - `href="/path/"` attributes (internal links)
    - `{% include 'template' %}` tags
    - `{% extends 'template' %}` tags
 
-2. **URL Pattern Discovery**: Inspects Django's URL configuration to find all defined URL patterns and their names
+2. **Project Boundary Filtering**: Only templates within your project's `BASE_DIR` are analyzed. Templates from installed packages (e.g., Django admin, third-party apps) are automatically excluded.
 
-3. **View Analysis**: Parses Python files to find:
+3. **URL Pattern Discovery**: Inspects Django's URL configuration to find all defined URL patterns and their names
+
+4. **View Analysis**: Parses Python files to find:
    - `render(request, 'template.html')` calls
    - `template_name = 'template.html'` in class-based views
 
-4. **Reverse/Redirect Analysis**: Uses AST parsing to detect:
+5. **Reverse/Redirect Analysis**: Uses AST parsing to detect:
    - `reverse('url-name')` calls
    - `reverse_lazy('url-name')` calls
    - `redirect('url-name')` calls
    - `HttpResponseRedirect(reverse('url-name'))` patterns
    - Dynamic URL patterns (f-strings, concatenation) are flagged for manual review
 
-5. **Relationship Mapping**: Connects templates ↔ URLs ↔ views to identify dead code
+6. **Transitive Template Detection**: Recursively traces template relationships to mark templates as used if they're referenced via `{% include %}` or `{% extends %}` from any used template
+
+7. **Relationship Mapping**: Connects templates ↔ URLs ↔ views to identify dead code
 
 ## Limitations
 
 - **Static Analysis Only**: Does not execute code or track runtime behavior
 - **Dynamic Templates**: Cannot detect templates loaded with dynamic names (e.g., `render(request, f'{variable}.html')`)
 - **Dynamic URLs**: Cannot automatically detect URLs generated with f-strings or concatenation (but flags them for manual review)
-- **Indirect Usage**: May flag templates used only through includes/extends as "unused"
-- **Third-party Packages**: Analyzes your code only, not installed packages
+- **Third-party Packages**: Analyzes your code only, not installed packages (templates outside BASE_DIR are automatically excluded)
 
 ## Development
 

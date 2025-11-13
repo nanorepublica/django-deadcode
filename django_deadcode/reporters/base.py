@@ -8,6 +8,16 @@ from typing import Any
 class BaseReporter(ABC):
     """Base class for all reporters."""
 
+    def __init__(self, show_template_relationships: bool = False):
+        """
+        Initialize the reporter.
+
+        Args:
+            show_template_relationships: Whether to show template
+                relationships in output
+        """
+        self.show_template_relationships = show_template_relationships
+
     @abstractmethod
     def generate_report(self, analysis_data: dict[str, Any]) -> str:
         """
@@ -102,30 +112,31 @@ class ConsoleReporter(BaseReporter):
                 lines.append(f"  • {template}")
             lines.append("")
 
-        # Template relationships
-        template_relationships = analysis_data.get("template_relationships", {})
-        includes = template_relationships.get("includes", {})
-        extends = template_relationships.get("extends", {})
+        # Template relationships - only show if flag is enabled
+        if self.show_template_relationships:
+            template_relationships = analysis_data.get("template_relationships", {})
+            includes = template_relationships.get("includes", {})
+            extends = template_relationships.get("extends", {})
 
-        if includes or extends:
-            lines.append("TEMPLATE RELATIONSHIPS")
-            lines.append("-" * 80)
+            if includes or extends:
+                lines.append("TEMPLATE RELATIONSHIPS")
+                lines.append("-" * 80)
 
-            if extends:
-                lines.append("Extends:")
-                for template, parents in sorted(extends.items()):
-                    if parents:
-                        for parent in sorted(parents):
-                            lines.append(f"  {template} → {parent}")
-                lines.append("")
+                if extends:
+                    lines.append("Extends:")
+                    for template, parents in sorted(extends.items()):
+                        if parents:
+                            for parent in sorted(parents):
+                                lines.append(f"  {template} → {parent}")
+                    lines.append("")
 
-            if includes:
-                lines.append("Includes:")
-                for template, included in sorted(includes.items()):
-                    if included:
-                        for inc in sorted(included):
-                            lines.append(f"  {template} → {inc}")
-                lines.append("")
+                if includes:
+                    lines.append("Includes:")
+                    for template, included in sorted(includes.items()):
+                        if included:
+                            for inc in sorted(included):
+                                lines.append(f"  {template} → {inc}")
+                    lines.append("")
 
         lines.append("=" * 80)
         return "\n".join(lines)
@@ -138,6 +149,11 @@ class JSONReporter(BaseReporter):
         """Generate a JSON report."""
         # Convert sets to lists for JSON serialization
         serializable_data = self._make_serializable(analysis_data)
+
+        # Only include relationships if flag is enabled
+        if not self.show_template_relationships:
+            serializable_data.pop("template_relationships", None)
+
         return json.dumps(serializable_data, indent=2)
 
     def _make_serializable(self, obj: Any) -> Any:
@@ -217,5 +233,33 @@ class MarkdownReporter(BaseReporter):
             for template in sorted(unused_templates):
                 lines.append(f"- `{template}`")
             lines.append("")
+
+        # Template relationships - only show if flag is enabled
+        if self.show_template_relationships:
+            template_relationships = analysis_data.get("template_relationships", {})
+            includes = template_relationships.get("includes", {})
+            extends = template_relationships.get("extends", {})
+
+            if includes or extends:
+                lines.append("## Template Relationships")
+                lines.append("")
+
+                if extends:
+                    lines.append("### Extends")
+                    lines.append("")
+                    for template, parents in sorted(extends.items()):
+                        if parents:
+                            for parent in sorted(parents):
+                                lines.append(f"- `{template}` → `{parent}`")
+                    lines.append("")
+
+                if includes:
+                    lines.append("### Includes")
+                    lines.append("")
+                    for template, included in sorted(includes.items()):
+                        if included:
+                            for inc in sorted(included):
+                                lines.append(f"- `{template}` → `{inc}`")
+                    lines.append("")
 
         return "\n".join(lines)
