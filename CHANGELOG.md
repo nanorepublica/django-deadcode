@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.3.1 (2025-11-13)
+
+### Fix
+
+* fix: minor version bump for release management
+
 ## v0.3.0 (2025-11-13)
 
 ### Feature
