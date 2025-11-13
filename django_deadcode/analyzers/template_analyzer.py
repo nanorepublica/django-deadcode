@@ -2,7 +2,6 @@
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
 
 class TemplateAnalyzer:
@@ -15,7 +14,7 @@ class TemplateAnalyzer:
     EXTENDS_PATTERN = re.compile(r'{%\s*extends\s+["\']([^"\']+)["\']', re.MULTILINE)
 
     def __init__(
-        self, template_dirs: Optional[List[Path]] = None, base_dir: Optional[Path] = None
+        self, template_dirs: list[Path] | None = None, base_dir: Path | None = None
     ) -> None:
         """
         Initialize the template analyzer.

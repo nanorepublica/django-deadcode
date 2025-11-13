@@ -106,7 +106,8 @@ class TestTemplateAnalyzer:
                 # Create template outside BASE_DIR
                 (tmppath2 / "test.html").write_text("<html>{% url 'home' %}</html>")
 
-                # Analyzer with template_dirs pointing to tmppath2 but BASE_DIR as tmppath1
+                # Analyzer with template_dirs pointing to tmppath2
+                # but BASE_DIR as tmppath1
                 analyzer = TemplateAnalyzer([tmppath2], base_dir=base_dir)
                 analyzer.find_all_templates()
 

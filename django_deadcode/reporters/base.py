@@ -13,7 +13,8 @@ class BaseReporter(ABC):
         Initialize the reporter.
 
         Args:
-            show_template_relationships: Whether to show template relationships in output
+            show_template_relationships: Whether to show template
+                relationships in output
         """
         self.show_template_relationships = show_template_relationships
 

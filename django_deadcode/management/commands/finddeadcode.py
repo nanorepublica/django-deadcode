@@ -1,7 +1,7 @@
 """Django management command for finding dead code."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Set
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
@@ -183,10 +183,10 @@ class Command(BaseCommand):
 
     def _find_transitively_referenced_templates(
         self,
-        directly_referenced: Set[str],
-        template_includes: Dict[str, Set[str]],
-        template_extends: Dict[str, Set[str]],
-    ) -> Set[str]:
+        directly_referenced: set[str],
+        template_includes: dict[str, set[str]],
+        template_extends: dict[str, set[str]],
+    ) -> set[str]:
         """
         Find all templates transitively referenced through include/extends.
 
