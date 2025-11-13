@@ -1,51 +1,126 @@
 # CHANGELOG
 
-## Unreleased
+## v0.2.0 (2025-11-13)
 
 ### Feature
 
-* feat: improve template reporting with BASE_DIR filtering and transitive detection
+* feat: improved template reporting ([`c7b9c87`](https://github.com/nanorepublica/django-deadcode/commit/c7b9c87c6ab3db0af9cc0a7aa01c00d5c8d1003d))
 
-Add three major improvements to template dead code detection:
+* feat: implement template reporting improvements with BASE_DIR filtering and transitive detection
 
-**1. BASE_DIR Filtering**
-- Only analyze templates within your project's BASE_DIR
-- Automatically excludes templates from installed packages (Django admin, third-party apps)
-- Properly handles symlinks (resolves for comparison but keeps original path)
+Implemented comprehensive template analysis improvements to reduce false
+positives and false negatives in dead code detection.
 
-**2. Transitive Template Detection**
-- Templates referenced via {% include %} or {% extends %} are now correctly marked as used
-- Recursive algorithm traces template chains (e.g., view → template1 → includes template2)
-- Handles circular references without infinite loops
-- Supports complex inheritance chains (10+ levels deep)
+## Phase 1: BASE_DIR Filtering
+- Added BASE_DIR retrieval from Django settings with error handling
+- Updated TemplateAnalyzer to filter templates by BASE_DIR
+- Implemented Python 3.8+ compatible path comparison helper
+- Proper symlink handling (resolved for comparison, original path stored)
 
-**3. Optional Relationship Reporting**
-- Add `--show-template-relationships` flag to show/hide template relationships
-- By default, relationships are hidden to reduce report verbosity
-- Works with all output formats (console, JSON, markdown)
+## Phase 2: Include/Extends Detection
+- Implemented transitive closure algorithm for template relationship detection
+- Templates referenced via {% include %} or {% extends %} now marked as used
+- BFS-style algorithm with circular reference prevention
+- Updated dead code detection to use transitive + direct references
 
-Testing:
-- 62/62 tests passing (12 new template analyzer tests, 11 new integration tests)
+## Phase 3: Optional Relationship Reporting
+- Added --show-template-relationships CLI flag (default: False)
+- Updated all reporters (Console, JSON, Markdown) to respect flag
+- Conditionally show/hide template relationship information
+- Backward compatible with existing output format
+
+## Phase 4: Testing &amp; Documentation
+- Added 29 new tests (12 unit, 11 integration, 6 reporter)
+- All 62 tests passing with 93% code coverage
+- Comprehensive edge case testing (circular refs, deep chains, symlinks)
+- Updated README.md with usage examples and feature documentation
+- Updated CHANGELOG.md with comprehensive entry
+
+## Files Changed
+Core Implementation:
+- django_deadcode/analyzers/template_analyzer.py
+- django_deadcode/management/commands/finddeadcode.py
+- django_deadcode/reporters/base.py
+
+Tests:
+- tests/test_template_analyzer.py
+- tests/test_command_integration.py (new)
+- tests/test_reporters.py
+- tests/settings.py
+
+Documentation:
+- README.md
+- CHANGELOG.md
+- agent-os/specs/2025-11-12-template-reporting-improvements/tasks.md
+- agent-os/specs/2025-11-12-template-reporting-improvements/verifications/
+
+## Test Results
+- 62/62 tests passing (100%)
 - 93% code coverage
-- Comprehensive edge case testing (circular includes, deep chains, missing templates, symlinks)
+- No regressions detected
+- All acceptance criteria met
 
-Files Modified:
-- django_deadcode/management/commands/finddeadcode.py (added BASE_DIR retrieval, transitive closure algorithm, flag support)
-- django_deadcode/analyzers/template_analyzer.py (added BASE_DIR filtering, Python 3.8+ compatibility helper)
-- django_deadcode/reporters/base.py (updated all reporters to support flag)
-- tests/test_template_analyzer.py (added 12 tests)
-- tests/test_command_integration.py (new file, 11 tests)
-- tests/test_reporters.py (added 6 tests)
-- tests/settings.py (added BASE_DIR)
-- README.md (documented new features)
-- CHANGELOG.md (this entry)
-
-Breaking Changes: None
-- All changes are additive and backward compatible
+## Backward Compatibility
+No breaking changes. All existing functionality preserved.
+- New CLI flag is optional with sensible defaults
 - Output format unchanged (just fewer false positives)
-- All existing tests continue to pass
+- All existing tests continue to pass ([`62f2bc1`](https://github.com/nanorepublica/django-deadcode/commit/62f2bc186f6c68baa90b115662021ea1495c71bb))
+
+* feat: add detailed spec and tasks for template reporting improvements
+
+Created comprehensive specification and task breakdown for improving
+template dead code detection:
+
+- BASE_DIR filtering to exclude external templates
+- Include/extends detection for transitive template references
+- Optional relationship reporting with CLI flag
+- Symlink handling improvements
+
+Spec includes:
+- Current vs proposed behavior analysis
+- Implementation details with code examples
+- Testing requirements and edge cases
+- Backwards compatibility considerations
+
+Tasks organized into 4 phases:
+1. BASE_DIR filtering implementation
+2. Include/extends transitive detection
+3. Optional relationship reporting
+4. Testing and documentation
+
+Based on codebase exploration of django_deadcode analyzers and
+user clarifications on requirements. ([`2bbc2dc`](https://github.com/nanorepublica/django-deadcode/commit/2bbc2dc3ced0c005ee6cefa19c09e64c8837b856))
+
+* feat: initialize spec for template reporting improvements
+
+Initialize spec folder for improving template reporting in django-deadcode:
+- Exclude templates outside project BASE_DIR
+- Detect template references via include/extends statements
+- Make template relationship reporting optional ([`c7aca72`](https://github.com/nanorepublica/django-deadcode/commit/c7aca723f43cec26b82d933baccb17cac6c5c08d))
+
+### Fix
+
+* fix: resolve ruff linting errors
+
+Fixed all ruff linting issues:
+- Replaced deprecated typing.Dict/List/Set with dict/list/set
+- Converted Optional[X] to X | None syntax
+- Removed unused imports
+- Fixed line length violations (max 88 chars)
+
+Changes:
+- django_deadcode/analyzers/template_analyzer.py: Updated type hints
+- django_deadcode/management/commands/finddeadcode.py: Updated type hints
+- django_deadcode/reporters/base.py: Fixed long docstring line
+- tests/test_template_analyzer.py: Fixed long comment line
+
+All 62 tests still passing with 93% coverage. ([`3562f3c`](https://github.com/nanorepublica/django-deadcode/commit/3562f3c48fb96797d1a455abd096f66314275048))
 
 ## v0.1.0 (2025-11-12)
+
+### Chore
+
+* chore(release): 0.1.0 ([`85994ed`](https://github.com/nanorepublica/django-deadcode/commit/85994ed0fbdfcb53d0a3a1ee11bd87d1d30e059e))
 
 ### Feature
 
@@ -73,7 +148,7 @@ Breaking Changes: None
 * fix: resolve semantic-release build failure by using pre-built artifacts
 
 The release job was failing because python-semantic-release tried to run
-'python -m build' but the build package wasn't installed in its container.
+&#39;python -m build&#39; but the build package wasn&#39;t installed in its container.
 
 This fix:
 - Downloads the already-built artifacts from the build job
@@ -81,12 +156,12 @@ This fix:
 - Avoids duplicate builds and uses tested artifacts
 - More efficient workflow execution
 
-Fixes the error: "/usr/local/bin/python: No module named build" ([`064f467`](https://github.com/nanorepublica/django-deadcode/commit/064f46797ccfbb6366f4d31ba078b44a2bab4bf2))
+Fixes the error: &#34;/usr/local/bin/python: No module named build&#34; ([`064f467`](https://github.com/nanorepublica/django-deadcode/commit/064f46797ccfbb6366f4d31ba078b44a2bab4bf2))
 
 * fix: resolve all ruff linting errors
 
 - Add missing reverse_analyzer parameter to _compile_analysis_data
-- Update type hints: Set -> set, IOError -> OSError
+- Update type hints: Set -&gt; set, IOError -&gt; OSError
 - Fix line length violations (split long lines)
 - Remove unused imports in test files ([`6bb93d3`](https://github.com/nanorepublica/django-deadcode/commit/6bb93d32a14011888cd5e75638ce08afea52885b))
 
@@ -112,9 +187,9 @@ feat: debug and identify release issues ([`dc88b8d`](https://github.com/nanorepu
 
 Add GitHub Actions for CI/CD and PyPI publishing ([`c80007f`](https://github.com/nanorepublica/django-deadcode/commit/c80007f33467c76e5ffaaa748d50bc25393427b6))
 
-* Merge branch 'claude/cicd-github-actions-011CV2ofdGATxikzCT7taJ3w' of http://127.0.0.1:57967/git/nanorepublica/django-deadcode into claude/cicd-github-actions-011CV2ofdGATxikzCT7taJ3w ([`cb2e384`](https://github.com/nanorepublica/django-deadcode/commit/cb2e38413da80dbba2036c4d802f2652f317704d))
+* Merge branch &#39;claude/cicd-github-actions-011CV2ofdGATxikzCT7taJ3w&#39; of http://127.0.0.1:57967/git/nanorepublica/django-deadcode into claude/cicd-github-actions-011CV2ofdGATxikzCT7taJ3w ([`cb2e384`](https://github.com/nanorepublica/django-deadcode/commit/cb2e38413da80dbba2036c4d802f2652f317704d))
 
-* Merge branch 'main' into claude/cicd-github-actions-011CV2ofdGATxikzCT7taJ3w ([`7117dfc`](https://github.com/nanorepublica/django-deadcode/commit/7117dfce628e757082dea55fecfab1ea27eeb74b))
+* Merge branch &#39;main&#39; into claude/cicd-github-actions-011CV2ofdGATxikzCT7taJ3w ([`7117dfc`](https://github.com/nanorepublica/django-deadcode/commit/7117dfce628e757082dea55fecfab1ea27eeb74b))
 
 * Merge pull request #3 from nanorepublica/claude/feature-reverse-redirect-detection-011CV2ofdGATxikzCT7taJ3w
 
@@ -133,8 +208,8 @@ New Features:
 
 Implementation Details:
 - AST parsing of all Python files (excluding migrations/third-party)
-- Handles nested patterns: HttpResponseRedirect(reverse('url'))
-- Supports namespaced URLs: reverse('app:view-name')
+- Handles nested patterns: HttpResponseRedirect(reverse(&#39;url&#39;))
+- Supports namespaced URLs: reverse(&#39;app:view-name&#39;)
 - Ignores method calls (self.reverse(), list.reverse())
 - Combines template and Python URL references
 
@@ -143,7 +218,7 @@ Testing:
 - 39/39 tests passing (100% success rate)
 - 100% code coverage on ReverseAnalyzer
 - 0 regressions in existing tests
-- Performance impact < 10%
+- Performance impact &lt; 10%
 
 Files Created:
 - django_deadcode/analyzers/reverse_analyzer.py (65 lines)
@@ -168,7 +243,7 @@ Django deadcode - v0.1.0 ([`0566864`](https://github.com/nanorepublica/django-de
 Applied automatic and manual fixes to resolve 95 linting issues:
 
 Automatic fixes (93 issues):
-- Updated typing imports: Dict -> dict, List -> list, Set -> set
+- Updated typing imports: Dict -&gt; dict, List -&gt; list, Set -&gt; set
 - Removed deprecated Optional[X] in favor of X | None
 - Removed unused imports (Template, TemplateSyntaxError, get_template,
   inspect, apps, TemplateView, importlib, sys, Path, etc.)
@@ -187,23 +262,23 @@ All tests pass (19/19). All ruff checks now pass. ([`a71a9b5`](https://github.co
 
 * Add pythonpath to pytest config to fix module import in CI
 
-Added 'pythonpath = ["."]' to pytest configuration to ensure the
+Added &#39;pythonpath = [&#34;.&#34;]&#39; to pytest configuration to ensure the
 project root is on the Python path when pytest-django initializes.
 
-This fixes the 'No module named tests' error in GitHub Actions CI.
+This fixes the &#39;No module named tests&#39; error in GitHub Actions CI.
 The pythonpath setting tells pytest to add the current directory to
 sys.path before importing test modules, allowing pytest-django to
-import 'tests.settings' successfully.
+import &#39;tests.settings&#39; successfully.
 
 Tests pass locally and should now pass in CI. ([`cb66329`](https://github.com/nanorepublica/django-deadcode/commit/cb66329ad91251f4d01d047310c595c99999ce49))
 
 * Fix pytest-django configuration for library packages
 
-Add 'django_find_project = false' to pytest configuration to prevent
+Add &#39;django_find_project = false&#39; to pytest configuration to prevent
 pytest-django from looking for manage.py.
 
 This is necessary because django-deadcode is a Django package/library,
-not a Django project. Libraries don't have manage.py files, but still
+not a Django project. Libraries don&#39;t have manage.py files, but still
 need Django settings for testing.
 
 The setting tells pytest-django to use the DJANGO_SETTINGS_MODULE
@@ -218,12 +293,12 @@ Updated testing matrix to focus on currently supported versions:
 Python versions:
 - Removed: 3.8 (EOL Oct 2024), 3.9 (EOL Oct 2025)
 - Testing: 3.10, 3.11, 3.12, 3.13
-- Minimum required: Python >=3.10
+- Minimum required: Python &gt;=3.10
 
 Django versions:
 - Removed: 3.2 LTS (EOL Apr 2024), 4.0 (EOL Apr 2023), 4.1 (EOL Dec 2023)
 - Testing: 4.2 LTS, 5.0, 5.1
-- Minimum required: Django >=4.2
+- Minimum required: Django &gt;=4.2
 
 Additional updates:
 - Updated pyproject.toml classifiers and dependencies
@@ -265,7 +340,7 @@ Security Features:
 
 Setup Required:
 1. Configure PyPI Trusted Publisher at pypi.org
-2. Optionally create 'pypi' environment in GitHub Settings
+2. Optionally create &#39;pypi&#39; environment in GitHub Settings
 3. Update version in pyproject.toml before release
 4. Create GitHub Release to trigger publishing
 
@@ -277,8 +352,8 @@ Created comprehensive task breakdown organized into 5 phases:
 - Phase 1: Foundation (optional AST refactoring)
 - Phase 2: Core Implementation (ReverseAnalyzer + pattern detection)
 - Phase 3: Integration (finddeadcode command)
-- Phase 4: Testing & QA (16-28 tests total)
-- Phase 5: Documentation & polish
+- Phase 4: Testing &amp; QA (16-28 tests total)
+- Phase 5: Documentation &amp; polish
 
 Key features:
 - Test-driven approach with focused test groups
@@ -304,19 +379,19 @@ Ready for task list creation. ([`3564f2d`](https://github.com/nanorepublica/djan
 
 Documented key decisions from requirements gathering phase:
 
-Scope & Architecture:
+Scope &amp; Architecture:
 - Analyze all Python files (views, forms, models, utils, etc.)
 - Create separate ReverseAnalyzer class
 - Refactor common AST parsing logic between analyzers
 
 Detection Patterns:
-- reverse('url-name')
-- redirect('url-name')
-- HttpResponseRedirect(reverse('url-name'))
-- reverse_lazy('url-name')
+- reverse(&#39;url-name&#39;)
+- redirect(&#39;url-name&#39;)
+- HttpResponseRedirect(reverse(&#39;url-name&#39;))
+- reverse_lazy(&#39;url-name&#39;)
 
 Behavior:
-- Mark detected URLs as "referenced" to prevent false positives
+- Mark detected URLs as &#34;referenced&#34; to prevent false positives
 - Detect dynamic URLs and flag for manual investigation
 - Exclude from unreferenced URL list
 
@@ -380,7 +455,7 @@ Features implemented:
 - Comprehensive test suite: 19 tests with 69% coverage
 
 Package structure:
-- Uses Django's native management command structure
+- Uses Django&#39;s native management command structure
 - Installable via pip with pyproject.toml configuration
 - Supports Django 3.2+ and Python 3.8+
 - CLI options for custom output formats, file export, and app filtering
