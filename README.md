@@ -2,8 +2,6 @@
 
 We find your buried bones (or code)!
 
-Note: this is currently an AI experiment. There has been zero code written or reviewed by a human so far! Use with caution!
-
 [![PyPI version](https://badge.fury.io/py/django-deadcode.svg)](https://badge.fury.io/py/django-deadcode)
 [![CI](https://github.com/nanorepublica/django-deadcode/actions/workflows/ci.yml/badge.svg)](https://github.com/nanorepublica/django-deadcode/actions/workflows/ci.yml)
 [![Python versions](https://img.shields.io/pypi/pyversions/django-deadcode.svg)](https://pypi.org/project/django-deadcode/)
