@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v0.3.0 (2025-11-13)
 
 ### Feature
 
