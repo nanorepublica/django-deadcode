@@ -1,12 +1,54 @@
 # CHANGELOG
 
-## v0.3.1 (2025-11-13)
+## v0.2.1 (2025-11-13)
+
+### Chore
+
+* chore: set version to 0.3.0 for PyPI release 
+
+Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
+
+* chore: set version to 0.3.0 for PyPI release
+
+Update version to 0.3.0 in both pyproject.toml and __init__.py to
+prepare for publishing to PyPI. ([`4bc9f91`](https://github.com/nanorepublica/django-deadcode/commit/4bc9f91f60ca8a9cd92ea2f1af98c7f4a41b5a0c))
+
+* chore(release): 0.3.1 ([`3b6e019`](https://github.com/nanorepublica/django-deadcode/commit/3b6e01996dc83e1d170e154e92e5f4fdbac5f241))
+
+* chore(release): 0.3.0 ([`2ad1f74`](https://github.com/nanorepublica/django-deadcode/commit/2ad1f74365f96bd7b41094cf1fe5d87c9592edf0))
+
+### Ci
+
+* ci: trigger CI workflow
+
+Trigger CI workflow to verify and publish version 0.3.0 to PyPI. ([`69b14c4`](https://github.com/nanorepublica/django-deadcode/commit/69b14c4b0f4f845c357fe828b2921cadbd353b16))
 
 ### Fix
 
-* fix: minor version bump for release management
+* fix: update README for production readiness
 
-## v0.3.0 (2025-11-13)
+Claude/update pypi version 01 kxyyzljhtm6 bp8r sx vypd s ([`07a56a0`](https://github.com/nanorepublica/django-deadcode/commit/07a56a01a690b5722db8a89d23b24bd1e535a0c6))
+
+* fix: update README for production readiness
+
+Remove experimental warning as the package has been thoroughly tested
+with 62 passing tests and 93% code coverage. ([`89cac28`](https://github.com/nanorepublica/django-deadcode/commit/89cac288d3b0dc0149028eeded034dbc97f5d002))
+
+### Unknown
+
+* Merge pull request #13 from nanorepublica/claude/agent-os-development-011CV4fE968vXyiH6k8T9hCU
+
+chore(release): 0.3.1 ([`cab09da`](https://github.com/nanorepublica/django-deadcode/commit/cab09dab9ca4ad65d5d643994a35df265bd74f9c))
+
+* Merge branch &#39;main&#39; into claude/agent-os-development-011CV4fE968vXyiH6k8T9hCU ([`7669602`](https://github.com/nanorepublica/django-deadcode/commit/7669602585f1a8fb57adef99ece8a0b3354fda11))
+
+## v0.2.0 (2025-11-13)
+
+### Chore
+
+* chore(release): 0.2.0 ([`409e1d1`](https://github.com/nanorepublica/django-deadcode/commit/409e1d1ef118e6c856bd162de2557273d3eb7455))
+
+* chore(release): 0.3.0 ([`57ced8d`](https://github.com/nanorepublica/django-deadcode/commit/57ced8d6748eb1179ac2bc27e5fecdb6062dbd75))
 
 ### Feature
 
