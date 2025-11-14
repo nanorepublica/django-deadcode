@@ -100,8 +100,7 @@ class CollectionDetailView(DetailView):
 
             # Analyze templates
             template_analyzer = TemplateAnalyzer(
-                template_dirs=[templates_path.parent],
-                base_dir=base_path
+                template_dirs=[templates_path.parent], base_dir=base_path
             )
             template_analyzer.find_all_templates()
 
@@ -151,21 +150,22 @@ class CollectionDetailView(DetailView):
 
             # 1. Verify collection_list.html is NOT flagged as unused
             # (should be detected by ListView default)
-            assert "collations/collection_list.html" in all_templates, \
-                "collection_list.html should be discovered"
+            assert (
+                "collations/collection_list.html" in all_templates
+            ), "collection_list.html should be discovered"
             assert "collations/collection_list.html" not in potentially_unused, (
                 "collection_list.html should NOT be flagged as unused "
                 "(ListView default)"
             )
             assert "collations/collection_list.html" in directly_referenced, (
-                "collection_list.html should be in directly_referenced "
-                "from ListView"
+                "collection_list.html should be in directly_referenced " "from ListView"
             )
 
             # 2. Verify collection_detail.html is NOT flagged as unused
             # (should be detected by DetailView default)
-            assert "collations/collection_detail.html" in all_templates, \
-                "collection_detail.html should be discovered"
+            assert (
+                "collations/collection_detail.html" in all_templates
+            ), "collection_detail.html should be discovered"
             assert "collations/collection_detail.html" not in potentially_unused, (
                 "collection_detail.html should NOT be flagged as unused "
                 "(DetailView default)"
@@ -177,17 +177,21 @@ class CollectionDetailView(DetailView):
 
             # 3. Verify base.html is NOT flagged as unused
             # (should be detected via extends relationship)
-            assert "collations/base.html" in all_templates, \
-                "base.html should be discovered"
-            assert "collations/base.html" not in potentially_unused, \
-                "base.html should NOT be flagged as unused (extends relationship)"
-            assert "collations/base.html" in transitively_referenced, \
-                "base.html should be in transitively_referenced via extends"
+            assert (
+                "collations/base.html" in all_templates
+            ), "base.html should be discovered"
+            assert (
+                "collations/base.html" not in potentially_unused
+            ), "base.html should NOT be flagged as unused (extends relationship)"
+            assert (
+                "collations/base.html" in transitively_referenced
+            ), "base.html should be in transitively_referenced via extends"
 
             # Summary assertion: NO templates should be flagged as unused
-            assert len(potentially_unused) == 0, \
-                f"All templates should be correctly identified as used. " \
+            assert len(potentially_unused) == 0, (
+                f"All templates should be correctly identified as used. "
                 f"Found unused: {potentially_unused}"
+            )
 
             print("\n✓ All collations app templates correctly identified as used!")
             print(f"  - Templates discovered: {len(all_templates)}")
@@ -223,8 +227,7 @@ def my_view(request):
 
             # Analyze templates
             template_analyzer = TemplateAnalyzer(
-                template_dirs=[templates_path.parent],
-                base_dir=base_path
+                template_dirs=[templates_path.parent], base_dir=base_path
             )
             template_analyzer.find_all_templates()
 
