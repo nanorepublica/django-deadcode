@@ -1,10 +1,138 @@
 # CHANGELOG
 
+## v0.3.0 (2025-11-14)
+
+### Chore
+
+* chore: remove trailing whitespace from CHANGELOG.md ([`af4f702`](https://github.com/nanorepublica/django-deadcode/commit/af4f70210c445ea30be09643e36b607598eaea22))
+
+* chore: initialize spec for template detection fix
+
+Initialize spec folder for fixing unused template detection feature
+where templates are incorrectly flagged as unreferenced due to
+relative path handling issues. ([`1124d74`](https://github.com/nanorepublica/django-deadcode/commit/1124d744d8f87f25fa905fdffb800df09aad3ca7))
+
+### Documentation
+
+* docs: add tasks breakdown for template detection fix
+
+Create comprehensive tasks list with 36 tasks across 4 phases:
+- Phase 1: Path normalization foundation (5 tasks, CRITICAL)
+- Phase 2: Enhanced detection - CBV defaults and template variables (11 tasks)
+- Phase 3: Command integration (5 tasks)
+- Phase 4: Testing and validation (15 tasks)
+
+Strategic organization respects dependencies, includes test-driven
+approach with 18-42 targeted tests, and targets 5-day implementation. ([`a4bc4f9`](https://github.com/nanorepublica/django-deadcode/commit/a4bc4f9d685f092cd0c149fed152325662dddf58))
+
+* docs: add comprehensive specification for template detection fix
+
+Create detailed specification document covering:
+- Problem statement with concrete examples
+- Root cause analysis of path mismatch bug
+- Four prioritized requirements (path normalization, CBV defaults, template variables, relationships)
+- Technical approach with architecture diagrams
+- 5-day phased implementation plan
+- Comprehensive test strategy
+- Success criteria and risk assessment ([`3bb6a89`](https://github.com/nanorepublica/django-deadcode/commit/3bb6a898a7c9b2ce3ed89840f78600fdfdee6a63))
+
+* docs: add requirements for template detection fix
+
+Document comprehensive requirements for fixing unused template detection:
+- Core bug: path mismatch between full paths and relative names
+- Need path normalization using Django&#39;s template loaders
+- CBV default template detection (ListView, DetailView, etc.)
+- Template variable detection (variables with &#39;template&#39; in name)
+- Enhanced relationship tracking for extends/include
+
+Success criteria and test cases included. ([`b12f2bb`](https://github.com/nanorepublica/django-deadcode/commit/b12f2bbcbf1432940eab8ea15fb73dec38f7f07a))
+
+### Feature
+
+* feat: path normalization for templates and cbv detection
+
+Path Normalization for templates and CBV detection ([`84bd028`](https://github.com/nanorepublica/django-deadcode/commit/84bd028cbb4b04101f85850eb9955aa756985259))
+
+* feat: fix unused template detection with path normalization and enhanced detection
+
+Implement comprehensive fix for template detection false positives across 6 task groups:
+
+PHASE 1: Path Normalization (CRITICAL)
+- Add normalize_template_path() to convert filesystem paths to Django-relative format
+- Update TemplateAnalyzer to store templates with normalized paths
+- Ensure template relationships (extends/includes) use normalized paths
+- 8 focused tests added, all passing
+
+PHASE 2: Enhanced Detection
+- Task Group 2: CBV Default Template Detection
+  * Detect ListView, DetailView, CreateView, UpdateView, DeleteView implicit templates
+  * Extract models from &#39;model&#39; attribute and &#39;queryset&#39; patterns
+  * Infer app labels from file paths
+  * Generate implicit template names following Django conventions
+  * 8 focused tests added, all passing
+
+- Task Group 3: Template Variable Detection
+  * Detect variables containing &#39;template&#39; in name (case-insensitive)
+  * Parse get_template_names() method returns
+  * Extract string constants from assignments and returns
+  * 7 focused tests added, all passing
+
+PHASE 3: Integration
+- Task Group 4: Command Integration &amp; Path Consistency
+  * Verify _compile_analysis_data() uses normalized paths
+  * Confirm transitive closure works with normalized paths
+  * Validate set comparison logic eliminates false positives
+  * 7 integration tests added, all passing
+
+PHASE 4: Validation
+- Task Group 5: Test Review &amp; Gap Analysis
+  * Review 51 existing tests from Task Groups 1-4
+  * Add 10 strategic tests for edge cases and error handling
+  * Achieve 93% code coverage (exceeds 90% target)
+
+- Task Group 6: Manual Validation &amp; Documentation
+  * Create collations app validation tests (4 tests)
+  * Add performance benchmarks (6 tests, &lt;1% impact vs 10% target)
+  * Update README with features, troubleshooting, changelog
+  * Code cleanup and linting fixes
+
+RESULTS:
+- 102/102 tests passing (92 original + 10 new)
+- 93% code coverage (target: &gt;90%)
+- &lt;1% performance impact (target: &lt;10%)
+- Zero false positives for collations app example
+- Production-ready for v0.3.0 release
+
+Fixes: Template detection false positives
+Resolves: collations/base.html, collection_list.html, collection_detail.html incorrectly flagged ([`76ddd8b`](https://github.com/nanorepublica/django-deadcode/commit/76ddd8b4f06b3800a10cc1f86510022caff6c566))
+
+### Style
+
+* style: apply ruff-format to test files
+
+Apply ruff formatting improvements:
+- Consolidate function arguments on single line when they fit
+- Reformat assertion statements for better readability
+- Standardize string concatenation formatting ([`05b822c`](https://github.com/nanorepublica/django-deadcode/commit/05b822c170f78f29a1ad18c1f8e6cc2eeb717010))
+
+* style: fix ruff lint issues (line length violations)
+
+Fix all E501 (line too long) and F541 (unused f-string) violations:
+- Shorten docstring in test_manual_collations_app.py
+- Split long assertion messages across multiple lines
+- Break long imports into parenthesized groups
+- Extract dict lookups to separate variables
+- Reformat long comments to fit within 88 character limit
+
+All 102 tests still passing. ([`807580e`](https://github.com/nanorepublica/django-deadcode/commit/807580e4efe9e52d7028b7e1334271e1d55fda80))
+
 ## v0.2.1 (2025-11-13)
 
 ### Chore
 
-* chore: set version to 0.3.0 for PyPI release
+* chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
+
+* chore: set version to 0.3.0 for PyPI release 
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
