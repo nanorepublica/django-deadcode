@@ -72,32 +72,6 @@ class ConsoleReporter(BaseReporter):
                 lines.append(f"    Pattern: {pattern}")
                 lines.append("")
 
-        # URLs referenced in templates
-        url_references = analysis_data.get("url_references", {})
-        if url_references:
-            lines.append("URL REFERENCES BY TEMPLATE")
-            lines.append("-" * 80)
-            for template_name in sorted(url_references.keys()):
-                urls = url_references[template_name]
-                if urls:
-                    lines.append(f"  {template_name}:")
-                    for url in sorted(urls):
-                        lines.append(f"    - {url}")
-                    lines.append("")
-
-        # Template usage by views
-        template_usage = analysis_data.get("template_usage", {})
-        if template_usage:
-            lines.append("TEMPLATE USAGE BY VIEWS")
-            lines.append("-" * 80)
-            for view_name in sorted(template_usage.keys()):
-                templates = template_usage[view_name]
-                if templates:
-                    lines.append(f"  {view_name}:")
-                    for template in sorted(templates):
-                        lines.append(f"    - {template}")
-                    lines.append("")
-
         # Unused templates
         unused_templates = analysis_data.get("unused_templates", [])
         if unused_templates:
