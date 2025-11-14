@@ -480,9 +480,10 @@ class ArticleListView(ListView):
 
             analyzer.analyze_view_file(views_file)
 
-            # Note: This is a known limitation - we can't easily extract from get_queryset
-            # For now, we verify the code doesn't crash and handles gracefully
-            # Template may not be detected without explicit model or queryset attribute
+            # Note: This is a known limitation - we can't easily extract
+            # from get_queryset. For now, we verify the code doesn't crash
+            # and handles gracefully. Template may not be detected without
+            # explicit model or queryset attribute
 
     def test_queryset_with_single_filter(self):
         """Test queryset with single filter method (not chained)."""

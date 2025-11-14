@@ -26,7 +26,7 @@ class TestCollationsAppExample:
 
     def test_collations_app_no_false_positives(self):
         """
-        Verify that the collations app example templates are correctly identified as used.
+        Verify collations app templates are correctly identified as used.
 
         Tests all three false positives mentioned in the spec:
         1. base.html - Referenced via {% extends %} in other templates
@@ -153,19 +153,27 @@ class CollectionDetailView(DetailView):
             # (should be detected by ListView default)
             assert "collations/collection_list.html" in all_templates, \
                 "collection_list.html should be discovered"
-            assert "collations/collection_list.html" not in potentially_unused, \
-                "collection_list.html should NOT be flagged as unused (ListView default)"
-            assert "collations/collection_list.html" in directly_referenced, \
-                "collection_list.html should be in directly_referenced from ListView"
+            assert "collations/collection_list.html" not in potentially_unused, (
+                "collection_list.html should NOT be flagged as unused "
+                "(ListView default)"
+            )
+            assert "collations/collection_list.html" in directly_referenced, (
+                "collection_list.html should be in directly_referenced "
+                "from ListView"
+            )
 
             # 2. Verify collection_detail.html is NOT flagged as unused
             # (should be detected by DetailView default)
             assert "collations/collection_detail.html" in all_templates, \
                 "collection_detail.html should be discovered"
-            assert "collations/collection_detail.html" not in potentially_unused, \
-                "collection_detail.html should NOT be flagged as unused (DetailView default)"
-            assert "collations/collection_detail.html" in directly_referenced, \
-                "collection_detail.html should be in directly_referenced from DetailView"
+            assert "collations/collection_detail.html" not in potentially_unused, (
+                "collection_detail.html should NOT be flagged as unused "
+                "(DetailView default)"
+            )
+            assert "collations/collection_detail.html" in directly_referenced, (
+                "collection_detail.html should be in directly_referenced "
+                "from DetailView"
+            )
 
             # 3. Verify base.html is NOT flagged as unused
             # (should be detected via extends relationship)
@@ -229,7 +237,8 @@ def my_view(request):
 
             # child.html should extend base.html
             assert "collations/child.html" in relationships["extends"]
-            assert "collations/base.html" in relationships["extends"]["collations/child.html"]
+            extends_dict = relationships["extends"]["collations/child.html"]
+            assert "collations/base.html" in extends_dict
 
             # Verify path normalization worked
             assert "collations/base.html" in template_analyzer.templates
@@ -263,8 +272,10 @@ class CollectionListView(ListView):
             # Verify implicit template was detected
             referenced_templates = set(view_analyzer.template_usage.keys())
 
-            assert "collations/collection_list.html" in referenced_templates, \
-                "ListView should generate implicit template name: collations/collection_list.html"
+            assert "collations/collection_list.html" in referenced_templates, (
+                "ListView should generate implicit template name: "
+                "collations/collection_list.html"
+            )
 
             print("\n✓ ListView implicit template correctly detected!")
 
@@ -294,7 +305,9 @@ class CollectionDetailView(DetailView):
             # Verify implicit template was detected
             referenced_templates = set(view_analyzer.template_usage.keys())
 
-            assert "collations/collection_detail.html" in referenced_templates, \
-                "DetailView should generate implicit template name: collations/collection_detail.html"
+            assert "collations/collection_detail.html" in referenced_templates, (
+                "DetailView should generate implicit template name: "
+                "collations/collection_detail.html"
+            )
 
             print("\n✓ DetailView implicit template correctly detected!")

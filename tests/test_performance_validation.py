@@ -236,8 +236,10 @@ class TestDetailView{i}(DetailView):
                     f"Template path contains 'templates': {template_name}"
 
             # Assert: Normalization should be fast (<1s for 100 templates)
-            assert elapsed < 1.0, \
-                f"Path normalization took {elapsed:.3f}s (should be <1s for 100 templates)"
+            assert elapsed < 1.0, (
+                f"Path normalization took {elapsed:.3f}s "
+                f"(should be <1s for 100 templates)"
+            )
 
     def test_performance_cbv_detection_overhead(self):
         """
@@ -254,13 +256,19 @@ class TestDetailView{i}(DetailView):
             views_file = app_path / "views.py"
 
             views_content = """
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView, DeleteView
+)
 from .models import TestModel
 
 """
 
+            cbv_types = [
+                "ListView", "DetailView", "CreateView",
+                "UpdateView", "DeleteView"
+            ]
             for i in range(100):
-                cbv_type = ["ListView", "DetailView", "CreateView", "UpdateView", "DeleteView"][i % 5]
+                cbv_type = cbv_types[i % 5]
                 views_content += f"""
 class Test{cbv_type}{i}({cbv_type}):
     model = TestModel
@@ -323,7 +331,7 @@ Template {i} in {app_name}
 
                 # Create views
                 views_file = app_path / "views.py"
-                views_content = f"""
+                views_content = """
 from django.views.generic import ListView, DetailView
 from .models import TestModel
 
@@ -369,7 +377,7 @@ class TestDetailView{i}(DetailView):
             total_templates = len(template_analyzer.templates)
             total_referenced = len(view_analyzer.template_usage)
 
-            print(f"\n✓ Comprehensive benchmark:")
+            print("\n✓ Comprehensive benchmark:")
             print(f"  - Total templates: {total_templates}")
             print(f"  - Referenced templates: {total_referenced}")
             print(f"  - Analysis time: {elapsed:.3f}s")
