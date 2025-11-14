@@ -48,6 +48,49 @@ class TemplateAnalyzer:
         except ValueError:
             return False
 
+    def normalize_template_path(self, filesystem_path: Path) -> str:
+        """
+        Convert filesystem path to Django-relative template path.
+
+        This method finds the 'templates/' directory in the path and returns
+        everything after it, which matches Django's template resolution format.
+
+        Args:
+            filesystem_path: Full filesystem path to template
+
+        Returns:
+            Django-relative template path (e.g., 'app_name/template.html')
+
+        Examples:
+            /app/apps/collations/templates/collations/base.html
+                -> collations/base.html
+            /app/templates/base.html
+                -> base.html
+            /app/templates/partials/header.html
+                -> partials/header.html
+            /app/templates/old_templates/templates/base.html
+                -> base.html (uses last occurrence)
+        """
+        path_parts = filesystem_path.parts
+
+        # Find all occurrences of 'templates' in path
+        templates_indices = [
+            i for i, part in enumerate(path_parts) if part == "templates"
+        ]
+
+        if not templates_indices:
+            # No 'templates' directory found, return filename
+            return filesystem_path.name
+
+        # Use the last occurrence of 'templates' directory
+        last_templates_index = templates_indices[-1]
+
+        # Get everything after 'templates/'
+        relative_parts = path_parts[last_templates_index + 1 :]
+
+        # Join with forward slashes (Django convention)
+        return "/".join(relative_parts)
+
     def analyze_template_file(self, template_path: Path) -> dict:
         """
         Analyze a single template file.
@@ -69,7 +112,10 @@ class TemplateAnalyzer:
                 "hrefs": set(),
             }
 
-        return self._analyze_template_content(content, str(template_path))
+        # Normalize the template path for consistent storage
+        normalized_path = self.normalize_template_path(template_path)
+
+        return self._analyze_template_content(content, normalized_path)
 
     def _analyze_template_content(self, content: str, template_name: str) -> dict:
         """
@@ -77,7 +123,7 @@ class TemplateAnalyzer:
 
         Args:
             content: Template content as string
-            template_name: Name or path of the template
+            template_name: Name or path of the template (should be normalized)
 
         Returns:
             Dictionary with sets of URLs, includes, extends, and hrefs
@@ -106,7 +152,7 @@ class TemplateAnalyzer:
             "hrefs": internal_hrefs,
         }
 
-        # Store in instance variables
+        # Store in instance variables using normalized template name
         self.templates[template_name] = result
         self.url_references[template_name] = url_tags
         self.template_includes[template_name] = includes
@@ -137,7 +183,7 @@ class TemplateAnalyzer:
                             # Skip templates that can't be resolved
                             continue
 
-                    # Store original path (not resolved)
+                    # Analyze template (will store with normalized path)
                     self.analyze_template_file(template_path)
 
     def analyze_all_templates(self, base_path: Path) -> dict[str, dict]:
