@@ -263,3 +263,16 @@ class TemplateAnalyzer:
         for urls in self.url_references.values():
             referenced.update(urls)
         return referenced
+
+    def get_all_internal_hrefs(self) -> set[str]:
+        """
+        Get all internal hrefs across all analyzed templates.
+
+        Returns:
+            Set of all internal hrefs found in templates
+        """
+        all_hrefs = set()
+        for template_data in self.templates.values():
+            hrefs = template_data.get("hrefs", set())
+            all_hrefs.update(hrefs)
+        return all_hrefs

@@ -56,20 +56,37 @@ class ConsoleReporter(BaseReporter):
 
         # Unreferenced URLs
         unreferenced_urls = analysis_data.get("unreferenced_urls", [])
-        if unreferenced_urls:
+        excluded_namespaces = analysis_data.get("excluded_namespaces", [])
+
+        if unreferenced_urls or excluded_namespaces:
             lines.append("UNREFERENCED URL PATTERNS")
             lines.append("-" * 80)
-            lines.append(
-                "These URL patterns are defined but never referenced in templates:"
-            )
-            lines.append("")
-            for url_name in sorted(unreferenced_urls):
-                url_info = analysis_data.get("url_details", {}).get(url_name, {})
-                view = url_info.get("view", "Unknown")
-                pattern = url_info.get("pattern", "Unknown")
-                lines.append(f"  • {url_name}")
-                lines.append(f"    View: {view}")
-                lines.append(f"    Pattern: {pattern}")
+
+            # Add exclusion note if there are excluded namespaces
+            if excluded_namespaces:
+                # Filter out None values and format the list
+                excluded_list = [ns for ns in excluded_namespaces if ns is not None]
+                if excluded_list:
+                    lines.append(
+                        f"Note: Third-party namespaces excluded: {', '.join(excluded_list)}"
+                    )
+                    lines.append("")
+
+            if unreferenced_urls:
+                lines.append(
+                    "These URL patterns are defined but never referenced in templates:"
+                )
+                lines.append("")
+                for url_name in sorted(unreferenced_urls):
+                    url_info = analysis_data.get("url_details", {}).get(url_name, {})
+                    view = url_info.get("view", "Unknown")
+                    pattern = url_info.get("pattern", "Unknown")
+                    lines.append(f"  • {url_name}")
+                    lines.append(f"    View: {view}")
+                    lines.append(f"    Pattern: {pattern}")
+                    lines.append("")
+            elif excluded_namespaces:
+                lines.append("All unreferenced URLs were from excluded namespaces.")
                 lines.append("")
 
         # Unused templates
@@ -178,20 +195,37 @@ class MarkdownReporter(BaseReporter):
 
         # Unreferenced URLs
         unreferenced_urls = analysis_data.get("unreferenced_urls", [])
-        if unreferenced_urls:
+        excluded_namespaces = analysis_data.get("excluded_namespaces", [])
+
+        if unreferenced_urls or excluded_namespaces:
             lines.append("## Unreferenced URL Patterns")
             lines.append("")
-            lines.append(
-                "These URL patterns are defined but never referenced in templates:"
-            )
-            lines.append("")
-            for url_name in sorted(unreferenced_urls):
-                url_info = analysis_data.get("url_details", {}).get(url_name, {})
-                view = url_info.get("view", "Unknown")
-                pattern = url_info.get("pattern", "Unknown")
-                lines.append(f"### `{url_name}`")
-                lines.append(f"- **View:** `{view}`")
-                lines.append(f"- **Pattern:** `{pattern}`")
+
+            # Add exclusion note if there are excluded namespaces
+            if excluded_namespaces:
+                # Filter out None values and format the list
+                excluded_list = [ns for ns in excluded_namespaces if ns is not None]
+                if excluded_list:
+                    lines.append(
+                        f"**Note:** Third-party namespaces excluded: {', '.join(excluded_list)}"
+                    )
+                    lines.append("")
+
+            if unreferenced_urls:
+                lines.append(
+                    "These URL patterns are defined but never referenced in templates:"
+                )
+                lines.append("")
+                for url_name in sorted(unreferenced_urls):
+                    url_info = analysis_data.get("url_details", {}).get(url_name, {})
+                    view = url_info.get("view", "Unknown")
+                    pattern = url_info.get("pattern", "Unknown")
+                    lines.append(f"### `{url_name}`")
+                    lines.append(f"- **View:** `{view}`")
+                    lines.append(f"- **Pattern:** `{pattern}`")
+                    lines.append("")
+            elif excluded_namespaces:
+                lines.append("All unreferenced URLs were from excluded namespaces.")
                 lines.append("")
 
         # Unused templates

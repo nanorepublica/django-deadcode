@@ -11,23 +11,23 @@ Estimated Tasks: ~35
 #### Task Group 1: Code Analysis
 **Dependencies:** None
 
-- [ ] 1.0 Analyze existing codebase structure
-  - [ ] 1.1 Review URLAnalyzer implementation
+- [x] 1.0 Analyze existing codebase structure
+  - [x] 1.1 Review URLAnalyzer implementation
     - Locate: `django_deadcode/analyzers/urls.py` or similar
     - Understand current `_process_url_pattern()` method
     - Identify where URL references are tracked
     - Document data structures used for URL storage
-  - [ ] 1.2 Review TemplateAnalyzer implementation
+  - [x] 1.2 Review TemplateAnalyzer implementation
     - Locate: `django_deadcode/analyzers/templates.py` or similar
     - Understand current template parsing logic
     - Identify existing href/link extraction (if any)
     - Note HTML parsing library in use (likely BeautifulSoup or regex)
-  - [ ] 1.3 Review main analyzer/orchestrator
+  - [x] 1.3 Review main analyzer/orchestrator
     - Locate main entry point that combines results
     - Understand how URLAnalyzer and TemplateAnalyzer are integrated
     - Identify where unreferenced URLs report is generated
     - Document current reference matching logic
-  - [ ] 1.4 Review settings and configuration handling
+  - [x] 1.4 Review settings and configuration handling
     - Check if settings module exists for django-deadcode
     - Understand current configuration pattern
     - Identify where to add DEADCODE_EXCLUDE_NAMESPACES
@@ -43,26 +43,26 @@ Estimated Tasks: ~35
 #### Task Group 2: Third-Party Detection Utility
 **Dependencies:** Task Group 1
 
-- [ ] 2.0 Implement third-party detection infrastructure
-  - [ ] 2.1 Write 2-8 focused tests for third-party detection
+- [x] 2.0 Implement third-party detection infrastructure
+  - [x] 2.1 Write 2-8 focused tests for third-party detection
     - Test: Module under BASE_DIR returns False
     - Test: Module outside BASE_DIR returns True
     - Test: Django built-in module (django.contrib.*) returns True
     - Test: Site-packages module returns True
     - Test: Module without __file__ attribute (edge case)
     - Limit to critical scenarios only
-  - [ ] 2.2 Create utility function `is_third_party_module()`
+  - [x] 2.2 Create utility function `is_third_party_module()`
     - Location: New file `django_deadcode/utils/module_detection.py` or in existing utils
     - Parameters: `module_path: str` or `view_callback: callable`
     - Logic: Get module's file path, compare against settings.BASE_DIR
     - Return: `bool` indicating if module is third-party
     - Handle edge cases: Built-in modules, modules without __file__
-  - [ ] 2.3 Add helper to determine module file path from view callback
+  - [x] 2.3 Add helper to determine module file path from view callback
     - Extract module from view function or class
     - Get __file__ attribute safely
     - Convert to absolute Path
     - Handle CBVs (class-based views) vs FBVs (function-based views)
-  - [ ] 2.4 Ensure third-party detection tests pass
+  - [x] 2.4 Ensure third-party detection tests pass
     - Run ONLY the 2-8 tests written in 2.1
     - Verify correct detection for project vs third-party modules
     - Do NOT run entire test suite at this stage
@@ -78,33 +78,33 @@ Estimated Tasks: ~35
 #### Task Group 3: URLAnalyzer Third-Party Support
 **Dependencies:** Task Group 2
 
-- [ ] 3.0 Enhance URLAnalyzer for third-party detection
-  - [ ] 3.1 Write 2-8 focused tests for URLAnalyzer enhancements
+- [x] 3.0 Enhance URLAnalyzer for third-party detection
+  - [x] 3.1 Write 2-8 focused tests for URLAnalyzer enhancements
     - Test: URL pattern with third-party view is marked as third-party
     - Test: URL pattern with project view is marked as project code
     - Test: Namespace with mixed patterns is detected as third-party if any pattern is third-party
     - Test: get_unreferenced_urls() excludes specified namespaces
     - Test: get_unreferenced_urls() returns excluded_namespaces set
     - Limit to critical URLAnalyzer functionality
-  - [ ] 3.2 Extend URL pattern data structure
+  - [x] 3.2 Extend URL pattern data structure
     - Add `module_path: str` field to store view's module path
     - Add `is_third_party: bool` field
     - Ensure backwards compatibility with existing code
-  - [ ] 3.3 Update `_process_url_pattern()` method
+  - [x] 3.3 Update `_process_url_pattern()` method
     - Extract module path from view callback
     - Call `is_third_party_module()` utility
     - Store both module_path and is_third_party flag
     - Handle include() patterns appropriately
-  - [ ] 3.4 Implement namespace-level third-party detection
+  - [x] 3.4 Implement namespace-level third-party detection
     - Add method `_detect_third_party_namespaces()` or similar
     - Logic: If ANY pattern in a namespace is third-party, mark entire namespace
     - Return: `set[str]` of third-party namespace names
-  - [ ] 3.5 Update `get_unreferenced_urls()` method signature
+  - [x] 3.5 Update `get_unreferenced_urls()` method signature
     - Add parameter: `excluded_namespaces: Optional[set[str]] = None`
     - Filter out URL patterns whose namespace is in excluded_namespaces
     - Return tuple: `(unreferenced_urls, excluded_namespaces_found)`
     - Maintain backwards compatibility
-  - [ ] 3.6 Ensure URLAnalyzer enhancement tests pass
+  - [x] 3.6 Ensure URLAnalyzer enhancement tests pass
     - Run ONLY the 2-8 tests written in 3.1
     - Verify third-party detection works correctly
     - Verify namespace exclusion works correctly
@@ -122,8 +122,8 @@ Estimated Tasks: ~35
 #### Task Group 4: TemplateAnalyzer Href Support
 **Dependencies:** Task Group 1
 
-- [ ] 4.0 Add href extraction to TemplateAnalyzer
-  - [ ] 4.1 Write 2-8 focused tests for href extraction
+- [x] 4.0 Add href extraction to TemplateAnalyzer
+  - [x] 4.1 Write 2-8 focused tests for href extraction
     - Test: Extract internal href like `/about/`
     - Test: Exclude external href like `https://example.com`
     - Test: Exclude protocol-relative href like `//cdn.example.com`
@@ -131,22 +131,22 @@ Estimated Tasks: ~35
     - Test: Normalize hrefs (handle with/without leading/trailing slashes)
     - Test: Handle multiple hrefs in one template
     - Limit to critical extraction scenarios
-  - [ ] 4.2 Implement href extraction method
+  - [x] 4.2 Implement href extraction method
     - Add method: `extract_internal_hrefs()` or similar
     - Parse HTML/template content for href attributes
     - Use existing parsing approach (BeautifulSoup, regex, or template parser)
     - Filter out external protocols: http://, https://, mailto:, tel:, javascript:, #, //
     - Return: `set[str]` of internal href paths
-  - [ ] 4.3 Implement href normalization
+  - [x] 4.3 Implement href normalization
     - Add utility function: `normalize_href(href: str) -> str`
     - Strip leading and trailing slashes for comparison
     - Handle empty hrefs and invalid values
     - Make comparison consistent with URL pattern format
-  - [ ] 4.4 Integrate href extraction into main analyze() flow
+  - [x] 4.4 Integrate href extraction into main analyze() flow
     - Call extract_internal_hrefs() during template analysis
     - Store extracted hrefs in TemplateAnalyzer results
     - Ensure existing template analysis ({% url %} tags) still works
-  - [ ] 4.5 Ensure href extraction tests pass
+  - [x] 4.5 Ensure href extraction tests pass
     - Run ONLY the 2-8 tests written in 4.1
     - Verify internal hrefs extracted correctly
     - Verify external hrefs excluded properly
@@ -164,8 +164,8 @@ Estimated Tasks: ~35
 #### Task Group 5: Href to URL Pattern Matching
 **Dependencies:** Task Groups 3, 4
 
-- [ ] 5.0 Implement href-to-pattern matching
-  - [ ] 5.1 Write 2-8 focused tests for matching logic
+- [x] 5.0 Implement href-to-pattern matching
+  - [x] 5.1 Write 2-8 focused tests for matching logic
     - Test: `/about/` matches pattern `about/`
     - Test: `/users/profile/` matches pattern `users/profile/`
     - Test: Href with trailing slash matches pattern without (and vice versa)
@@ -173,24 +173,24 @@ Estimated Tasks: ~35
     - Test: Matched patterns are added to referenced URL set
     - Test: Integration: Href in template marks URL as referenced
     - Limit to critical matching scenarios
-  - [ ] 5.2 Create URL pattern matching utility
+  - [x] 5.2 Create URL pattern matching utility
     - Add function: `match_href_to_pattern(href: str, pattern: str) -> bool`
     - Normalize both href and pattern before comparison
     - Use simple string matching (not regex evaluation)
     - Handle leading/trailing slash variations
     - Return True if href matches pattern
-  - [ ] 5.3 Implement bulk matching function
+  - [x] 5.3 Implement bulk matching function
     - Add function: `find_matching_url_patterns(hrefs: set[str], url_patterns: dict) -> set[str]`
     - Iterate through hrefs and URL patterns
     - Use match_href_to_pattern() for comparison
     - Return: `set[str]` of URL pattern names that matched
-  - [ ] 5.4 Integrate matching into main analyzer
+  - [x] 5.4 Integrate matching into main analyzer
     - Get internal hrefs from TemplateAnalyzer
     - Get URL patterns from URLAnalyzer
     - Call find_matching_url_patterns()
     - Add matched URL names to the referenced URLs set
     - Ensure this happens before generating unreferenced report
-  - [ ] 5.5 Ensure matching logic tests pass
+  - [x] 5.5 Ensure matching logic tests pass
     - Run ONLY the 2-8 tests written in 5.1
     - Verify hrefs correctly match URL patterns
     - Verify matched URLs marked as referenced
@@ -208,32 +208,32 @@ Estimated Tasks: ~35
 #### Task Group 6: Settings and Report Output
 **Dependencies:** Task Groups 3, 5
 
-- [ ] 6.0 Implement configuration and reporting
-  - [ ] 6.1 Write 2-8 focused tests for configuration and reporting
+- [x] 6.0 Implement configuration and reporting
+  - [x] 6.1 Write 2-8 focused tests for configuration and reporting
     - Test: DEADCODE_EXCLUDE_NAMESPACES setting is read correctly
     - Test: Manual exclusions combined with auto-detected third-party namespaces
     - Test: Report includes "Note: Third-party namespaces excluded: ..." line
     - Test: Note only appears when namespaces actually excluded
     - Test: Excluded namespaces listed alphabetically
     - Limit to critical configuration scenarios
-  - [ ] 6.2 Add settings support for DEADCODE_EXCLUDE_NAMESPACES
+  - [x] 6.2 Add settings support for DEADCODE_EXCLUDE_NAMESPACES
     - Check if settings handler exists, otherwise create one
     - Add function: `get_excluded_namespaces() -> set[str]`
     - Read from Django settings: `settings.DEADCODE_EXCLUDE_NAMESPACES`
     - Return empty set if not configured
     - Validate that value is iterable of strings
-  - [ ] 6.3 Combine exclusion sources
+  - [x] 6.3 Combine exclusion sources
     - In main analyzer, get auto-detected third-party namespaces from URLAnalyzer
     - Get manual exclusions from settings: get_excluded_namespaces()
     - Combine both sets: `excluded = auto_detected | manual_exclusions`
     - Pass combined set to get_unreferenced_urls()
-  - [ ] 6.4 Update unreferenced URLs report format
+  - [x] 6.4 Update unreferenced URLs report format
     - Locate report generation code (likely in management command or main analyzer)
     - After "UNREFERENCED URL PATTERNS" heading, add informational note
     - Format: "Note: Third-party namespaces excluded: {', '.join(sorted(excluded_namespaces))}"
     - Only show note if excluded_namespaces is non-empty
     - Maintain existing report format for the URL list itself
-  - [ ] 6.5 Ensure configuration and reporting tests pass
+  - [x] 6.5 Ensure configuration and reporting tests pass
     - Run ONLY the 2-8 tests written in 6.1
     - Verify settings read correctly
     - Verify report note appears correctly
@@ -252,12 +252,12 @@ Estimated Tasks: ~35
 #### Task Group 7: End-to-End Testing
 **Dependencies:** All previous task groups (1-6)
 
-- [ ] 7.0 Validate complete feature integration
-  - [ ] 7.1 Review all existing tests
+- [x] 7.0 Validate complete feature integration
+  - [x] 7.1 Review all existing tests
     - Count tests from Task Groups 2-6 (approximately 10-40 tests)
     - Verify each test group's tests are passing
     - Document any test failures or gaps
-  - [ ] 7.2 Analyze test coverage gaps for URL pattern enhancements only
+  - [x] 7.2 Analyze test coverage gaps for URL pattern enhancements only
     - Identify critical workflows lacking coverage:
       - End-to-end: href in template → matched → excluded from unreferenced report
       - End-to-end: third-party URL → auto-detected → excluded from report
@@ -266,7 +266,7 @@ Estimated Tasks: ~35
       - Integration: All features work together with real Django project structure
     - Focus ONLY on this feature's integration points
     - Prioritize end-to-end workflows over unit test gaps
-  - [ ] 7.3 Write up to 10 additional integration tests maximum
+  - [x] 7.3 Write up to 10 additional integration tests maximum
     - Add maximum of 10 new tests to fill critical gaps identified
     - Focus on end-to-end scenarios and integration points
     - Test complete workflows:
@@ -276,13 +276,13 @@ Estimated Tasks: ~35
       - Existing functionality still works ({% url %}, reverse() detection)
     - DO NOT write exhaustive coverage for all edge cases
     - Skip performance tests and non-critical edge cases
-  - [ ] 7.4 Run all feature-specific tests
+  - [x] 7.4 Run all feature-specific tests
     - Run all tests from Task Groups 2-6 plus new tests from 7.3
     - Expected total: approximately 20-50 tests maximum
     - Verify all tests pass
     - Fix any integration issues discovered
     - Do NOT run entire application test suite (if this is part of larger project)
-  - [ ] 7.5 Manual validation with sample Django project
+  - [x] 7.5 Manual validation with sample Django project
     - Create or use test Django project with:
       - Project URLs under BASE_DIR
       - Third-party URLs (e.g., Django admin, DRF)
@@ -293,7 +293,7 @@ Estimated Tasks: ~35
     - Verify: Third-party URLs excluded from unreferenced report
     - Verify: Report note shows excluded namespaces
     - Verify: Existing functionality ({% url %} detection) still works
-  - [ ] 7.6 Update documentation
+  - [x] 7.6 Update documentation
     - Update README.md or main documentation with new features:
       - Explain internal href matching capability
       - Explain automatic third-party exclusion

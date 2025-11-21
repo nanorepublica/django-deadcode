@@ -58,7 +58,7 @@ def another_view(request):
                 url_analyzer.url_names.add(name)
 
             # Get unreferenced URLs (excluding reverse references)
-            unreferenced = url_analyzer.get_unreferenced_urls(referenced_urls)
+            unreferenced, _ = url_analyzer.get_unreferenced_urls(referenced_urls)
 
             # Verify that reverse-referenced URLs are NOT in unreferenced list
             assert "detail-page" not in unreferenced
@@ -140,7 +140,7 @@ def view2(request):
                 url_analyzer.url_patterns[name] = {"pattern": f"/{name}/"}
                 url_analyzer.url_names.add(name)
 
-            unreferenced = url_analyzer.get_unreferenced_urls(all_referenced)
+            unreferenced, _ = url_analyzer.get_unreferenced_urls(all_referenced)
 
             # Only truly unused URL should be unreferenced
             assert unreferenced == {"truly-unused-url"}
@@ -282,7 +282,7 @@ def do_something():
                 url_analyzer.url_names.add(name)
 
             # Get unreferenced URLs
-            unreferenced = url_analyzer.get_unreferenced_urls(referenced_urls)
+            unreferenced, _ = url_analyzer.get_unreferenced_urls(referenced_urls)
 
             # url1-url4 are referenced in Python, so only url5 and
             # migration-url are unreferenced

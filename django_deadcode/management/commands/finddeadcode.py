@@ -13,6 +13,7 @@ from django_deadcode.analyzers import (
     ViewAnalyzer,
 )
 from django_deadcode.reporters import ConsoleReporter, JSONReporter, MarkdownReporter
+from django_deadcode.utils import find_matching_url_patterns, get_excluded_namespaces
 
 
 class Command(BaseCommand):
@@ -249,8 +250,29 @@ class Command(BaseCommand):
         all_url_names = url_analyzer.get_all_url_names()
         template_refs = template_analyzer.get_referenced_urls()
         reverse_refs = reverse_analyzer.get_referenced_urls()
-        referenced_urls = template_refs | reverse_refs
-        unreferenced_urls = url_analyzer.get_unreferenced_urls(referenced_urls)
+
+        # NEW: Get internal hrefs from templates and match them to URL patterns
+        internal_hrefs = template_analyzer.get_all_internal_hrefs()
+        href_matched_urls = find_matching_url_patterns(
+            internal_hrefs, url_analyzer.url_patterns
+        )
+
+        # Combine all referenced URLs (from {% url %} tags, reverse() calls, and href matches)
+        referenced_urls = template_refs | reverse_refs | href_matched_urls
+
+        # NEW: Get third-party namespaces from URLAnalyzer
+        third_party_namespaces = url_analyzer.get_third_party_namespaces()
+
+        # NEW: Get manual exclusions from settings
+        manual_exclusions = get_excluded_namespaces()
+
+        # NEW: Combine all exclusions
+        all_excluded_namespaces = third_party_namespaces | manual_exclusions
+
+        # NEW: Get unreferenced URLs with exclusions
+        unreferenced_urls, excluded_namespaces_found = url_analyzer.get_unreferenced_urls(
+            referenced_urls, all_excluded_namespaces
+        )
 
         # Get template data
         all_templates = set(template_analyzer.templates.keys())
@@ -293,6 +315,8 @@ class Command(BaseCommand):
             "all_urls": list(all_url_names),
             "referenced_urls": list(referenced_urls),
             "dynamic_url_patterns": list(reverse_analyzer.get_dynamic_patterns()),
+            # NEW: Add excluded namespaces to analysis data
+            "excluded_namespaces": sorted(excluded_namespaces_found),
         }
 
         return analysis_data
