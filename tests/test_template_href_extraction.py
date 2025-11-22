@@ -1,7 +1,5 @@
 """Tests for template href extraction functionality."""
 
-import pytest
-from pathlib import Path
 from django_deadcode.analyzers import TemplateAnalyzer
 
 

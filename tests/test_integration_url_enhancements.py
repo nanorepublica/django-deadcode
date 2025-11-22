@@ -1,20 +1,17 @@
 """Integration tests for URL pattern enhancements feature."""
 
-import pytest
-from pathlib import Path
-from unittest.mock import patch, Mock
 from django.test import override_settings
 
-from django_deadcode.analyzers import URLAnalyzer, TemplateAnalyzer
-from django_deadcode.utils import find_matching_url_patterns, get_excluded_namespaces
+from django_deadcode.analyzers import TemplateAnalyzer, URLAnalyzer
 from django_deadcode.reporters import ConsoleReporter, MarkdownReporter
+from django_deadcode.utils import find_matching_url_patterns, get_excluded_namespaces
 
 
 class TestHrefToURLMatching:
     """Integration tests for href-to-URL pattern matching."""
 
     def test_href_in_template_matches_url_pattern(self):
-        """Test that a template href matches a URL pattern and marks it as referenced."""
+        """Test template href matches URL pattern and marks it as referenced."""
         # Create URL analyzer with a simple pattern
         url_analyzer = URLAnalyzer()
         url_analyzer.url_patterns = {
@@ -227,7 +224,10 @@ class TestThirdPartyExclusion:
         report = reporter.generate_report(analysis_data)
 
         # Check that exclusion note is present
-        assert "**Note:** Third-party namespaces excluded: admin, rest_framework" in report
+        expected_note = (
+            "**Note:** Third-party namespaces excluded: admin, rest_framework"
+        )
+        assert expected_note in report
 
     def test_no_exclusion_note_when_no_exclusions(self):
         """Test that exclusion note does not appear when there are no exclusions."""
@@ -313,7 +313,9 @@ class TestEndToEndWorkflow:
         assert "admin" in third_party
 
         # Step 5: Get unreferenced URLs with exclusions
-        unreferenced, excluded = url_analyzer.get_unreferenced_urls(all_refs, third_party)
+        unreferenced, excluded = url_analyzer.get_unreferenced_urls(
+            all_refs, third_party
+        )
 
         # Verify results:
         # - admin:index is excluded (third-party)

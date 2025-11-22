@@ -1,10 +1,9 @@
 """Tests for href to URL pattern matching functionality."""
 
-import pytest
 from django_deadcode.utils.url_matching import (
-    normalize_path,
-    match_href_to_pattern,
     find_matching_url_patterns,
+    match_href_to_pattern,
+    normalize_path,
 )
 
 

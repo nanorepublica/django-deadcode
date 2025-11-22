@@ -1,8 +1,8 @@
 """Tests for configuration handling."""
 
-import pytest
 from django.conf import settings
 from django.test import override_settings
+
 from django_deadcode.utils.config import get_excluded_namespaces
 
 

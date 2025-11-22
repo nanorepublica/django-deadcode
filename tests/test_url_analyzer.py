@@ -1,7 +1,8 @@
 """Tests for the URL analyzer."""
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import Mock, patch
 
 from django_deadcode.analyzers import URLAnalyzer
 
@@ -147,7 +148,11 @@ class TestURLAnalyzerThirdParty:
                 "namespace": "admin",
                 "is_third_party": True,
             },
-            "app:view1": {"name": "app:view1", "namespace": "app", "is_third_party": False},
+            "app:view1": {
+                "name": "app:view1",
+                "namespace": "app",
+                "is_third_party": False,
+            },
         }
         analyzer.url_names = {"admin:index", "admin:login", "app:view1"}
 
@@ -169,7 +174,7 @@ class TestURLAnalyzerThirdParty:
 
     @pytest.mark.django_db
     def test_namespace_with_any_third_party_is_excluded(self):
-        """Test that if any pattern in a namespace is third-party, the whole namespace is marked."""
+        """Test any third-party pattern marks whole namespace as third-party."""
         analyzer = URLAnalyzer()
 
         # Create mock patterns where namespace has mixed third-party status

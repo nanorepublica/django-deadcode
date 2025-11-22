@@ -257,7 +257,8 @@ class Command(BaseCommand):
             internal_hrefs, url_analyzer.url_patterns
         )
 
-        # Combine all referenced URLs (from {% url %} tags, reverse() calls, and href matches)
+        # Combine all referenced URLs
+        # (from {% url %} tags, reverse() calls, and href matches)
         referenced_urls = template_refs | reverse_refs | href_matched_urls
 
         # NEW: Get third-party namespaces from URLAnalyzer
@@ -270,7 +271,10 @@ class Command(BaseCommand):
         all_excluded_namespaces = third_party_namespaces | manual_exclusions
 
         # NEW: Get unreferenced URLs with exclusions
-        unreferenced_urls, excluded_namespaces_found = url_analyzer.get_unreferenced_urls(
+        (
+            unreferenced_urls,
+            excluded_namespaces_found,
+        ) = url_analyzer.get_unreferenced_urls(
             referenced_urls, all_excluded_namespaces
         )
 

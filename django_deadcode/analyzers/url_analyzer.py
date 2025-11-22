@@ -203,7 +203,8 @@ class URLAnalyzer:
                 excluded_namespaces_found.add(namespace)
                 continue
 
-            # Check if URL without namespace should be excluded (None in excluded_namespaces)
+            # Check if URL without namespace should be excluded
+            # (None in excluded_namespaces)
             if not namespace and None in excluded_namespaces:
                 excluded_namespaces_found.add(None)
                 continue

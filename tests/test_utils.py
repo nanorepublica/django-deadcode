@@ -1,11 +1,11 @@
 """Tests for utility functions."""
 
-import pytest
 from pathlib import Path
 from unittest.mock import Mock
+
 from django.conf import settings
 
-from django_deadcode.utils import is_third_party_module, get_module_path
+from django_deadcode.utils import get_module_path, is_third_party_module
 
 
 class TestThirdPartyDetection:
@@ -41,14 +41,12 @@ class TestThirdPartyDetection:
         mock_view.__module__ = "django.contrib.admin.sites"
 
         # Get the actual admin module
-        import sys
         if hasattr(admin, "__file__"):
             assert is_third_party_module(mock_view)
 
     def test_site_packages_module_is_third_party(self):
         """Test that modules in site-packages are third-party."""
         # Use an actual third-party module like pytest
-        import pytest as pytest_module
         mock_view = Mock()
         mock_view.__module__ = "pytest"
 
@@ -57,7 +55,6 @@ class TestThirdPartyDetection:
 
     def test_module_without_file_is_third_party(self):
         """Test that built-in modules without __file__ are third-party."""
-        import sys
         # Built-in modules like sys don't have __file__
         mock_view = Mock()
         mock_view.__module__ = "sys"
@@ -80,7 +77,7 @@ class TestThirdPartyDetection:
     def test_get_module_path_from_class(self):
         """Test extracting module path from a class-based view."""
         class TestView:
-            def as_view(cls):
+            def as_view(self):
                 pass
 
         TestView.__module__ = "test_module.views"
