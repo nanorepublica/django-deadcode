@@ -117,9 +117,9 @@ class TestDetailView{i}(DetailView):
             print(f"\n✓ Small project (10 templates): {elapsed:.3f}s")
 
             # Assert: Should complete in <1 second
-            assert (
-                elapsed < 1.0
-            ), f"Small project analysis took {elapsed:.3f}s (should be <1s)"
+            assert elapsed < 1.0, (
+                f"Small project analysis took {elapsed:.3f}s (should be <1s)"
+            )
 
     def test_performance_medium_project(self):
         """
@@ -153,9 +153,9 @@ class TestDetailView{i}(DetailView):
             print(f"\n✓ Medium project (100 templates): {elapsed:.3f}s")
 
             # Assert: Should complete in <5 seconds
-            assert (
-                elapsed < 5.0
-            ), f"Medium project analysis took {elapsed:.3f}s (should be <5s)"
+            assert elapsed < 5.0, (
+                f"Medium project analysis took {elapsed:.3f}s (should be <5s)"
+            )
 
     def test_performance_large_project(self):
         """
@@ -189,9 +189,9 @@ class TestDetailView{i}(DetailView):
             print(f"\n✓ Large project (1000 templates): {elapsed:.3f}s")
 
             # Assert: Should complete in <30 seconds
-            assert (
-                elapsed < 30.0
-            ), f"Large project analysis took {elapsed:.3f}s (should be <30s)"
+            assert elapsed < 30.0, (
+                f"Large project analysis took {elapsed:.3f}s (should be <30s)"
+            )
 
     def test_performance_path_normalization_overhead(self):
         """
@@ -229,12 +229,12 @@ class TestDetailView{i}(DetailView):
             # Verify all paths were normalized
             for template_name in template_analyzer.templates.keys():
                 # Should be normalized format: myapp/template_X.html
-                assert template_name.startswith(
-                    "myapp/"
-                ), f"Template path not normalized: {template_name}"
-                assert (
-                    "templates" not in template_name
-                ), f"Template path contains 'templates': {template_name}"
+                assert template_name.startswith("myapp/"), (
+                    f"Template path not normalized: {template_name}"
+                )
+                assert "templates" not in template_name, (
+                    f"Template path contains 'templates': {template_name}"
+                )
 
             # Assert: Normalization should be fast (<1s for 100 templates)
             assert elapsed < 1.0, (
@@ -296,9 +296,9 @@ class Test{cbv_type}{i}({cbv_type}):
             assert len(referenced_templates) > 0, "No templates detected from CBVs"
 
             # Assert: CBV detection should be fast (<1s for 100 views)
-            assert (
-                elapsed < 1.0
-            ), f"CBV detection took {elapsed:.3f}s (should be <1s for 100 views)"
+            assert elapsed < 1.0, (
+                f"CBV detection took {elapsed:.3f}s (should be <1s for 100 views)"
+            )
 
     def test_performance_comprehensive_benchmark(self):
         """
@@ -388,11 +388,11 @@ class TestDetailView{i}(DetailView):
             print(f"  - Templates/second: {total_templates / elapsed:.1f}")
 
             # Assert: Should complete in reasonable time
-            assert (
-                elapsed < 5.0
-            ), f"Comprehensive analysis took {elapsed:.3f}s (should be <5s)"
+            assert elapsed < 5.0, (
+                f"Comprehensive analysis took {elapsed:.3f}s (should be <5s)"
+            )
 
             # Assert: Should have found templates
-            assert (
-                total_templates > 100
-            ), f"Should have found >100 templates, found {total_templates}"
+            assert total_templates > 100, (
+                f"Should have found >100 templates, found {total_templates}"
+            )

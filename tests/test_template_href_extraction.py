@@ -79,11 +79,11 @@ class TestTemplateHrefExtraction:
 
     def test_extract_multiple_internal_hrefs(self):
         """Test extraction of multiple internal hrefs from one template."""
-        content = '''
+        content = """
             <a href="/home/">Home</a>
             <a href="/about/">About</a>
             <a href="/contact/">Contact</a>
-        '''
+        """
         analyzer = TemplateAnalyzer()
         result = analyzer._analyze_template_content(content, "test.html")
 
@@ -94,12 +94,12 @@ class TestTemplateHrefExtraction:
 
     def test_mixed_internal_and_external_hrefs(self):
         """Test that only internal hrefs are extracted from mixed content."""
-        content = '''
+        content = """
             <a href="/internal/">Internal</a>
             <a href="https://example.com">External</a>
             <a href="/another/">Another</a>
             <a href="mailto:test@example.com">Email</a>
-        '''
+        """
         analyzer = TemplateAnalyzer()
         result = analyzer._analyze_template_content(content, "test.html")
 

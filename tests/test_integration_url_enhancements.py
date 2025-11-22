@@ -45,10 +45,10 @@ class TestHrefToURLMatching:
         url_analyzer.url_names = {"home", "about", "contact"}
 
         template_analyzer = TemplateAnalyzer()
-        template_content = '''
+        template_content = """
             <a href="/">Home</a>
             <a href="/about/">About</a>
-        '''
+        """
         template_analyzer._analyze_template_content(template_content, "test.html")
 
         hrefs = template_analyzer.get_all_internal_hrefs()
@@ -290,10 +290,10 @@ class TestEndToEndWorkflow:
 
         # Set up template analyzer with hrefs
         template_analyzer = TemplateAnalyzer()
-        template_content = '''
+        template_content = """
             <a href="/about/">About</a>
             {% url 'contact' %}
-        '''
+        """
         template_analyzer._analyze_template_content(template_content, "test.html")
 
         # Step 1: Get references from {% url %} tags
@@ -328,11 +328,11 @@ class TestEndToEndWorkflow:
     def test_existing_functionality_still_works(self):
         """Test that existing {% url %} tag detection still works."""
         template_analyzer = TemplateAnalyzer()
-        template_content = '''
+        template_content = """
             {% url 'home' %}
             {% url 'about' %}
             {% url 'contact' %}
-        '''
+        """
         template_analyzer._analyze_template_content(template_content, "test.html")
 
         url_refs = template_analyzer.get_referenced_urls()

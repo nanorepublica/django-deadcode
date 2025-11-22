@@ -22,6 +22,7 @@ class TestThirdPartyDetection:
 
         # Create a module mock
         import sys
+
         mock_module = Mock()
         mock_module.__file__ = str(project_module_path)
         sys.modules["myapp.views"] = mock_module
@@ -37,6 +38,7 @@ class TestThirdPartyDetection:
         """Test that Django built-in modules are third-party."""
         # Create a mock view from django.contrib.admin
         from django.contrib import admin
+
         mock_view = Mock()
         mock_view.__module__ = "django.contrib.admin.sites"
 
@@ -64,6 +66,7 @@ class TestThirdPartyDetection:
 
     def test_get_module_path_from_function(self):
         """Test extracting module path from a function-based view."""
+
         def test_view(request):
             pass
 
@@ -76,6 +79,7 @@ class TestThirdPartyDetection:
 
     def test_get_module_path_from_class(self):
         """Test extracting module path from a class-based view."""
+
         class TestView:
             def as_view(self):
                 pass
@@ -87,6 +91,7 @@ class TestThirdPartyDetection:
 
     def test_is_third_party_with_callable(self):
         """Test is_third_party_module works with actual callable."""
+
         # Create a simple function
         def my_view(request):
             return None

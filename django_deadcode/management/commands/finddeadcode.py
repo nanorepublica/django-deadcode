@@ -274,9 +274,7 @@ class Command(BaseCommand):
         (
             unreferenced_urls,
             excluded_namespaces_found,
-        ) = url_analyzer.get_unreferenced_urls(
-            referenced_urls, all_excluded_namespaces
-        )
+        ) = url_analyzer.get_unreferenced_urls(referenced_urls, all_excluded_namespaces)
 
         # Get template data
         all_templates = set(template_analyzer.templates.keys())
