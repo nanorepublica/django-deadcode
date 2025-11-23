@@ -157,9 +157,9 @@ class CollectionDetailView(DetailView):
                 "collection_list.html should NOT be flagged as unused "
                 "(ListView default)"
             )
-            assert "collations/collection_list.html" in directly_referenced, (
-                "collection_list.html should be in directly_referenced " "from ListView"
-            )
+            assert (
+                "collations/collection_list.html" in directly_referenced
+            ), "collection_list.html should be in directly_referenced from ListView"
 
             # 2. Verify collection_detail.html is NOT flagged as unused
             # (should be detected by DetailView default)

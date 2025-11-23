@@ -193,7 +193,7 @@ class TestCommandIntegration:
         # Setup test data with deep chain
         directly_referenced = {"template0.html"}
         template_includes = {
-            f"template{i}.html": {f"template{i+1}.html"} for i in range(10)
+            f"template{i}.html": {f"template{i + 1}.html"} for i in range(10)
         }
         template_extends = {}
 

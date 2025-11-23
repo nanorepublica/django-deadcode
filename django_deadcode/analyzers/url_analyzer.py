@@ -4,6 +4,8 @@ from django.conf import settings
 from django.urls import URLPattern, URLResolver, get_resolver
 from django.urls.resolvers import RegexPattern, RoutePattern
 
+from django_deadcode.utils import get_module_path, is_third_party_module
+
 
 class URLAnalyzer:
     """Analyzes Django URL patterns and their relationships."""
@@ -84,8 +86,12 @@ class URLAnalyzer:
         view = pattern.callback
         if view:
             view_name = f"{view.__module__}.{view.__name__}"
+            module_path = get_module_path(view)
+            is_third_party = is_third_party_module(view)
         else:
             view_name = "Unknown"
+            module_path = "Unknown"
+            is_third_party = False
 
         # Get the URL name
         url_name = pattern.name
@@ -103,6 +109,8 @@ class URLAnalyzer:
                 "pattern": full_pattern,
                 "view": view_name,
                 "namespace": namespace,
+                "module_path": module_path,
+                "is_third_party": is_third_party,
             }
 
     def get_all_url_names(self) -> set[str]:
@@ -140,17 +148,70 @@ class URLAnalyzer:
             url_name for url_name, view in self.url_to_view.items() if view == view_name
         ]
 
-    def get_unreferenced_urls(self, referenced_urls: set[str]) -> set[str]:
+    def get_third_party_namespaces(self) -> set[str]:
+        """
+        Get all namespaces that contain at least one third-party URL pattern.
+
+        A namespace is considered third-party if ANY of its patterns
+        are from third-party code.
+
+        Returns:
+            Set of third-party namespace names
+        """
+        third_party_namespaces = set()
+
+        for url_name, details in self.url_patterns.items():
+            if details.get("is_third_party", False):
+                namespace = details.get("namespace")
+                if namespace:
+                    third_party_namespaces.add(namespace)
+
+        return third_party_namespaces
+
+    def get_unreferenced_urls(
+        self, referenced_urls: set[str], excluded_namespaces: set[str] | None = None
+    ) -> tuple[set[str], set[str]]:
         """
         Find URL patterns that are never referenced.
 
         Args:
             referenced_urls: Set of URL names that are referenced
+            excluded_namespaces: Optional set of namespaces to exclude from results
 
         Returns:
-            Set of unreferenced URL names
+            Tuple of (unreferenced_urls, excluded_namespaces_found)
+            - unreferenced_urls: Set of unreferenced URL names
+            - excluded_namespaces_found: Set of namespaces that were actually excluded
         """
-        return self.url_names - referenced_urls
+        if excluded_namespaces is None:
+            excluded_namespaces = set()
+
+        # Find unreferenced URLs
+        unreferenced = self.url_names - referenced_urls
+
+        # Track which excluded namespaces actually had URLs removed
+        excluded_namespaces_found = set()
+
+        # Filter out URLs from excluded namespaces
+        filtered_unreferenced = set()
+        for url_name in unreferenced:
+            url_details = self.url_patterns.get(url_name, {})
+            namespace = url_details.get("namespace")
+
+            # Check if URL should be excluded
+            if namespace and namespace in excluded_namespaces:
+                excluded_namespaces_found.add(namespace)
+                continue
+
+            # Check if URL without namespace should be excluded
+            # (None in excluded_namespaces)
+            if not namespace and None in excluded_namespaces:
+                excluded_namespaces_found.add(None)
+                continue
+
+            filtered_unreferenced.add(url_name)
+
+        return filtered_unreferenced, excluded_namespaces_found
 
     def get_url_statistics(self) -> dict:
         """
