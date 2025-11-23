@@ -1,8 +1,97 @@
 # CHANGELOG
 
+## v0.4.0 (2025-11-23)
+
+### Chore
+
+* chore: update ruff-pre-commit version to v0.8.4 ([`cf66b6d`](https://github.com/nanorepublica/django-deadcode/commit/cf66b6d0addc9915fa9803ff41bc0c2b7d2e1e7f))
+
+* chore: fix trailing whitespace in CHANGELOG.md
+
+Applied pre-commit hook to remove trailing whitespace. ([`e096722`](https://github.com/nanorepublica/django-deadcode/commit/e096722607d74a29a03828f28d76f95d21730024))
+
+### Documentation
+
+* docs: add final verification report for URL pattern enhancements ([`c13edbc`](https://github.com/nanorepublica/django-deadcode/commit/c13edbc113acfe1e1a7807fdab02c5fc5853adfc))
+
+* docs: add tasks breakdown for URL pattern enhancements ([`2a6b53c`](https://github.com/nanorepublica/django-deadcode/commit/2a6b53c98bee0370d4d2f41178c83b5e94d7ec96))
+
+* docs: add spec for URL pattern enhancements ([`b8732c9`](https://github.com/nanorepublica/django-deadcode/commit/b8732c9d22b1f8c2ed4fe0deda0abc8b8b045ffc))
+
+### Feature
+
+* feat: fix unreferenced URL patterns for internal links ([`c369b60`](https://github.com/nanorepublica/django-deadcode/commit/c369b601e984e75e142184795a5ff2ae5d1cd7fa))
+
+* feat: implement URL pattern enhancements with href matching and third-party exclusion
+
+Implement two major enhancements to django-deadcode&#39;s URL pattern detection:
+
+1. Raw URL Pattern Matching
+   - Extract internal hrefs from templates (e.g., &lt;a href=&#34;/about/&#34;&gt;)
+   - Match hrefs against URL patterns using simple string matching
+   - Mark matched URL patterns as referenced to reduce false positives
+   - Properly handle path normalization (leading/trailing slashes)
+   - Filter external protocols (http://, https://, mailto:, tel:, etc.)
+
+2. Third-Party URL Exclusion
+   - Auto-detect third-party namespaces by checking if view modules are outside BASE_DIR
+   - Exclude entire namespaces if any pattern is third-party
+   - Support manual exclusions via DEADCODE_EXCLUDE_NAMESPACES setting
+   - Add informational note to reports listing excluded namespaces
+   - Silently remove third-party URLs from unreferenced list
+
+Implementation Details:
+- Created utils module with module_detection, url_matching, and config utilities
+- Enhanced URLAnalyzer to store module_path and is_third_party for each pattern
+- Updated get_unreferenced_urls() to return tuple: (unreferenced, excluded_namespaces)
+- Added get_all_internal_hrefs() method to TemplateAnalyzer
+- Updated management command to integrate href matching and namespace exclusion
+- Enhanced all reporters (Console, JSON, Markdown) to show exclusion notes
+- Maintained full backwards compatibility with existing functionality
+
+Tests:
+- Added 74 new tests across 5 new test files
+- All 172 tests pass including existing tests
+- Tests cover: third-party detection, href extraction, pattern matching,
+  configuration handling, and end-to-end integration
+
+Configuration:
+Users can now configure:
+  DEADCODE_EXCLUDE_NAMESPACES = [&#39;admin&#39;, &#39;debug_toolbar&#39;]
+
+This addresses the common issue of third-party URLs (like Django admin)
+appearing as unreferenced, and improves detection by matching raw hrefs
+in templates. ([`ab0c5c8`](https://github.com/nanorepublica/django-deadcode/commit/ab0c5c89b86e62c79915409f1290c987d9f93909))
+
+### Refactor
+
+* refactor: remove URL REFERENCES BY TEMPLATE and TEMPLATE USAGE BY VIEWS sections
+
+Remove these reporting sections from ConsoleReporter as they are no longer needed:
+- URL REFERENCES BY TEMPLATE
+- TEMPLATE USAGE BY VIEWS
+
+This streamlines the console output to focus on the most important information. ([`c8fb0a9`](https://github.com/nanorepublica/django-deadcode/commit/c8fb0a969fa0cb39be1c33ded6ac61ad750ec6b6))
+
+### Style
+
+* style: apply ruff-format v0.8.4 to test files ([`f041320`](https://github.com/nanorepublica/django-deadcode/commit/f041320def33f0cb42e445a81d1e2df3f434384c))
+
+* style: apply ruff-format to all files ([`27a670d`](https://github.com/nanorepublica/django-deadcode/commit/27a670db117b0a5bfe7116e6c8c72365ab98d2a6))
+
+* style: fix ruff linting errors (line length and imports) ([`743fd0d`](https://github.com/nanorepublica/django-deadcode/commit/743fd0de9b8c8ed53a51624cfeff7203584000eb))
+
+### Unknown
+
+* Merge pull request #17 from nanorepublica/claude/remove-reporting-sections-01YTxtgpotVnM33V7bWjk9D6
+
+Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/nanorepublica/django-deadcode/commit/7ee6a27bd7e3d260e8405bce62055f046fef42c8))
+
 ## v0.3.0 (2025-11-14)
 
 ### Chore
+
+* chore(release): 0.3.0 ([`d3f9631`](https://github.com/nanorepublica/django-deadcode/commit/d3f96312478432307329f8bade337dd92f246122))
 
 * chore: remove trailing whitespace from CHANGELOG.md ([`af4f702`](https://github.com/nanorepublica/django-deadcode/commit/af4f70210c445ea30be09643e36b607598eaea22))
 
@@ -132,7 +221,7 @@ All 102 tests still passing. ([`807580e`](https://github.com/nanorepublica/djang
 
 * chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
 
-* chore: set version to 0.3.0 for PyPI release
+* chore: set version to 0.3.0 for PyPI release 
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
