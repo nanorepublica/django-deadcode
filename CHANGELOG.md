@@ -1,14 +1,28 @@
 # CHANGELOG
 
-## v0.4.0 (2025-11-23)
+## v0.3.0 (2025-11-26)
 
 ### Chore
+
+* chore: release fix ([`c98af15`](https://github.com/nanorepublica/django-deadcode/commit/c98af15720a5919aa6fe7b82b0adc3b947f98a4e))
+
+* chore(release): 0.4.0 ([`565ef70`](https://github.com/nanorepublica/django-deadcode/commit/565ef705023d700cbc8d18171ac70fe7c4d08878))
 
 * chore: update ruff-pre-commit version to v0.8.4 ([`cf66b6d`](https://github.com/nanorepublica/django-deadcode/commit/cf66b6d0addc9915fa9803ff41bc0c2b7d2e1e7f))
 
 * chore: fix trailing whitespace in CHANGELOG.md
 
 Applied pre-commit hook to remove trailing whitespace. ([`e096722`](https://github.com/nanorepublica/django-deadcode/commit/e096722607d74a29a03828f28d76f95d21730024))
+
+* chore(release): 0.3.0 ([`d3f9631`](https://github.com/nanorepublica/django-deadcode/commit/d3f96312478432307329f8bade337dd92f246122))
+
+* chore: remove trailing whitespace from CHANGELOG.md ([`af4f702`](https://github.com/nanorepublica/django-deadcode/commit/af4f70210c445ea30be09643e36b607598eaea22))
+
+* chore: initialize spec for template detection fix
+
+Initialize spec folder for fixing unused template detection feature
+where templates are incorrectly flagged as unreferenced due to
+relative path handling issues. ([`1124d74`](https://github.com/nanorepublica/django-deadcode/commit/1124d744d8f87f25fa905fdffb800df09aad3ca7))
 
 ### Documentation
 
@@ -18,7 +32,42 @@ Applied pre-commit hook to remove trailing whitespace. ([`e096722`](https://gith
 
 * docs: add spec for URL pattern enhancements ([`b8732c9`](https://github.com/nanorepublica/django-deadcode/commit/b8732c9d22b1f8c2ed4fe0deda0abc8b8b045ffc))
 
+* docs: add tasks breakdown for template detection fix
+
+Create comprehensive tasks list with 36 tasks across 4 phases:
+- Phase 1: Path normalization foundation (5 tasks, CRITICAL)
+- Phase 2: Enhanced detection - CBV defaults and template variables (11 tasks)
+- Phase 3: Command integration (5 tasks)
+- Phase 4: Testing and validation (15 tasks)
+
+Strategic organization respects dependencies, includes test-driven
+approach with 18-42 targeted tests, and targets 5-day implementation. ([`a4bc4f9`](https://github.com/nanorepublica/django-deadcode/commit/a4bc4f9d685f092cd0c149fed152325662dddf58))
+
+* docs: add comprehensive specification for template detection fix
+
+Create detailed specification document covering:
+- Problem statement with concrete examples
+- Root cause analysis of path mismatch bug
+- Four prioritized requirements (path normalization, CBV defaults, template variables, relationships)
+- Technical approach with architecture diagrams
+- 5-day phased implementation plan
+- Comprehensive test strategy
+- Success criteria and risk assessment ([`3bb6a89`](https://github.com/nanorepublica/django-deadcode/commit/3bb6a898a7c9b2ce3ed89840f78600fdfdee6a63))
+
+* docs: add requirements for template detection fix
+
+Document comprehensive requirements for fixing unused template detection:
+- Core bug: path mismatch between full paths and relative names
+- Need path normalization using Django&#39;s template loaders
+- CBV default template detection (ListView, DetailView, etc.)
+- Template variable detection (variables with &#39;template&#39; in name)
+- Enhanced relationship tracking for extends/include
+
+Success criteria and test cases included. ([`b12f2bb`](https://github.com/nanorepublica/django-deadcode/commit/b12f2bbcbf1432940eab8ea15fb73dec38f7f07a))
+
 ### Feature
+
+* feat: release ([`47fd562`](https://github.com/nanorepublica/django-deadcode/commit/47fd562fee38b68bce62636aff093bb3cacc9674))
 
 * feat: fix unreferenced URL patterns for internal links ([`c369b60`](https://github.com/nanorepublica/django-deadcode/commit/c369b601e984e75e142184795a5ff2ae5d1cd7fa))
 
@@ -62,81 +111,6 @@ Users can now configure:
 This addresses the common issue of third-party URLs (like Django admin)
 appearing as unreferenced, and improves detection by matching raw hrefs
 in templates. ([`ab0c5c8`](https://github.com/nanorepublica/django-deadcode/commit/ab0c5c89b86e62c79915409f1290c987d9f93909))
-
-### Refactor
-
-* refactor: remove URL REFERENCES BY TEMPLATE and TEMPLATE USAGE BY VIEWS sections
-
-Remove these reporting sections from ConsoleReporter as they are no longer needed:
-- URL REFERENCES BY TEMPLATE
-- TEMPLATE USAGE BY VIEWS
-
-This streamlines the console output to focus on the most important information. ([`c8fb0a9`](https://github.com/nanorepublica/django-deadcode/commit/c8fb0a969fa0cb39be1c33ded6ac61ad750ec6b6))
-
-### Style
-
-* style: apply ruff-format v0.8.4 to test files ([`f041320`](https://github.com/nanorepublica/django-deadcode/commit/f041320def33f0cb42e445a81d1e2df3f434384c))
-
-* style: apply ruff-format to all files ([`27a670d`](https://github.com/nanorepublica/django-deadcode/commit/27a670db117b0a5bfe7116e6c8c72365ab98d2a6))
-
-* style: fix ruff linting errors (line length and imports) ([`743fd0d`](https://github.com/nanorepublica/django-deadcode/commit/743fd0de9b8c8ed53a51624cfeff7203584000eb))
-
-### Unknown
-
-* Merge pull request #17 from nanorepublica/claude/remove-reporting-sections-01YTxtgpotVnM33V7bWjk9D6
-
-Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/nanorepublica/django-deadcode/commit/7ee6a27bd7e3d260e8405bce62055f046fef42c8))
-
-## v0.3.0 (2025-11-14)
-
-### Chore
-
-* chore(release): 0.3.0 ([`d3f9631`](https://github.com/nanorepublica/django-deadcode/commit/d3f96312478432307329f8bade337dd92f246122))
-
-* chore: remove trailing whitespace from CHANGELOG.md ([`af4f702`](https://github.com/nanorepublica/django-deadcode/commit/af4f70210c445ea30be09643e36b607598eaea22))
-
-* chore: initialize spec for template detection fix
-
-Initialize spec folder for fixing unused template detection feature
-where templates are incorrectly flagged as unreferenced due to
-relative path handling issues. ([`1124d74`](https://github.com/nanorepublica/django-deadcode/commit/1124d744d8f87f25fa905fdffb800df09aad3ca7))
-
-### Documentation
-
-* docs: add tasks breakdown for template detection fix
-
-Create comprehensive tasks list with 36 tasks across 4 phases:
-- Phase 1: Path normalization foundation (5 tasks, CRITICAL)
-- Phase 2: Enhanced detection - CBV defaults and template variables (11 tasks)
-- Phase 3: Command integration (5 tasks)
-- Phase 4: Testing and validation (15 tasks)
-
-Strategic organization respects dependencies, includes test-driven
-approach with 18-42 targeted tests, and targets 5-day implementation. ([`a4bc4f9`](https://github.com/nanorepublica/django-deadcode/commit/a4bc4f9d685f092cd0c149fed152325662dddf58))
-
-* docs: add comprehensive specification for template detection fix
-
-Create detailed specification document covering:
-- Problem statement with concrete examples
-- Root cause analysis of path mismatch bug
-- Four prioritized requirements (path normalization, CBV defaults, template variables, relationships)
-- Technical approach with architecture diagrams
-- 5-day phased implementation plan
-- Comprehensive test strategy
-- Success criteria and risk assessment ([`3bb6a89`](https://github.com/nanorepublica/django-deadcode/commit/3bb6a898a7c9b2ce3ed89840f78600fdfdee6a63))
-
-* docs: add requirements for template detection fix
-
-Document comprehensive requirements for fixing unused template detection:
-- Core bug: path mismatch between full paths and relative names
-- Need path normalization using Django&#39;s template loaders
-- CBV default template detection (ListView, DetailView, etc.)
-- Template variable detection (variables with &#39;template&#39; in name)
-- Enhanced relationship tracking for extends/include
-
-Success criteria and test cases included. ([`b12f2bb`](https://github.com/nanorepublica/django-deadcode/commit/b12f2bbcbf1432940eab8ea15fb73dec38f7f07a))
-
-### Feature
 
 * feat: path normalization for templates and cbv detection
 
@@ -195,7 +169,23 @@ RESULTS:
 Fixes: Template detection false positives
 Resolves: collations/base.html, collection_list.html, collection_detail.html incorrectly flagged ([`76ddd8b`](https://github.com/nanorepublica/django-deadcode/commit/76ddd8b4f06b3800a10cc1f86510022caff6c566))
 
+### Refactor
+
+* refactor: remove URL REFERENCES BY TEMPLATE and TEMPLATE USAGE BY VIEWS sections
+
+Remove these reporting sections from ConsoleReporter as they are no longer needed:
+- URL REFERENCES BY TEMPLATE
+- TEMPLATE USAGE BY VIEWS
+
+This streamlines the console output to focus on the most important information. ([`c8fb0a9`](https://github.com/nanorepublica/django-deadcode/commit/c8fb0a969fa0cb39be1c33ded6ac61ad750ec6b6))
+
 ### Style
+
+* style: apply ruff-format v0.8.4 to test files ([`f041320`](https://github.com/nanorepublica/django-deadcode/commit/f041320def33f0cb42e445a81d1e2df3f434384c))
+
+* style: apply ruff-format to all files ([`27a670d`](https://github.com/nanorepublica/django-deadcode/commit/27a670db117b0a5bfe7116e6c8c72365ab98d2a6))
+
+* style: fix ruff linting errors (line length and imports) ([`743fd0d`](https://github.com/nanorepublica/django-deadcode/commit/743fd0de9b8c8ed53a51624cfeff7203584000eb))
 
 * style: apply ruff-format to test files
 
@@ -215,13 +205,19 @@ Fix all E501 (line too long) and F541 (unused f-string) violations:
 
 All 102 tests still passing. ([`807580e`](https://github.com/nanorepublica/django-deadcode/commit/807580e4efe9e52d7028b7e1334271e1d55fda80))
 
+### Unknown
+
+* Merge pull request #17 from nanorepublica/claude/remove-reporting-sections-01YTxtgpotVnM33V7bWjk9D6
+
+Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/nanorepublica/django-deadcode/commit/7ee6a27bd7e3d260e8405bce62055f046fef42c8))
+
 ## v0.2.1 (2025-11-13)
 
 ### Chore
 
 * chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
 
-* chore: set version to 0.3.0 for PyPI release
+* chore: set version to 0.3.0 for PyPI release 
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
