@@ -6,24 +6,6 @@
 
 * feat: release ([`002ccdf`](https://github.com/nanorepublica/django-deadcode/commit/002ccdf9e9915aa77f6e151924bdcb18940b6dd2))
 
-* feat: release ([`9392c88`](https://github.com/nanorepublica/django-deadcode/commit/9392c88ac55ff00420552d8406c8ec19d75915f9))
-
-* feat: release ([`d5e209c`](https://github.com/nanorepublica/django-deadcode/commit/d5e209c56e8cb7d5e897a9dfb86c1a34e63203f0))
-
-* feat: release ([`13b1caa`](https://github.com/nanorepublica/django-deadcode/commit/13b1caaed9496c1d821f79f687f0c28a91c81595))
-
-* feat: release ([`d5144dd`](https://github.com/nanorepublica/django-deadcode/commit/d5144dd795547b7f528c5e235c5f3c0486251508))
-
-* feat: release ([`3afaf91`](https://github.com/nanorepublica/django-deadcode/commit/3afaf91663fba206c68d3b2fa5b58c3df3d939e2))
-
-### Fix
-
-* fix: release ([`89f7de2`](https://github.com/nanorepublica/django-deadcode/commit/89f7de2126e4904abb4029a386152a9c44156d4b))
-
-### Unknown
-
-* patch: release ([`55a3e21`](https://github.com/nanorepublica/django-deadcode/commit/55a3e21046f477d652aa155d6cea9d2f3fe7dbfd))
-
 ## v0.3.0 (2025-11-26)
 
 ### Chore
