@@ -1,6 +1,74 @@
 # CHANGELOG
 
+## v0.5.1 (2025-11-28)
+
+### Documentation
+
+* docs: add task list for URL reference detection fix
+
+Break down implementation into 4 task groups with 16 sub-tasks:
+- Task Group 1: Path normalization enhancement (strip ^, $, handle /?)
+- Task Group 2: Dynamic URL pattern matching (helper functions)
+- Task Group 3: Integration and match function enhancement
+- Task Group 4: Final verification and edge cases
+
+Follows TDD approach with ~28-30 new tests planned. ([`26df666`](https://github.com/nanorepublica/django-deadcode/commit/26df6666d3b79d8ee4343cace43ebc51613a23e5))
+
+* docs: add spec for fixing URL reference detection false positives
+
+Add specification for fixing false positives when detecting unreferenced
+URLs. The issue occurs because regex anchors (^ and $) and optional
+trailing slashes (/?) in URL patterns aren&#39;t being stripped during
+normalization, causing pattern-to-href comparison to fail.
+
+The spec covers:
+- Enhanced normalize_path() to strip regex syntax
+- Helper functions for detecting capture groups
+- Dynamic URL matching for patterns with template variables ({{)
+- Comprehensive test cases for edge cases ([`1767e5e`](https://github.com/nanorepublica/django-deadcode/commit/1767e5e88a7a9ad12b4f05d2f06164aa489bc3e4))
+
+### Fix
+
+* fix: fix false positives on unreferenced urls
+
+Fix false positives in URL reference detection ([`ae491df`](https://github.com/nanorepublica/django-deadcode/commit/ae491dfb84c14f70649e5cbac92c98f7e7a04e16))
+
+* fix: handle regex anchors and dynamic URLs in pattern matching
+
+Fix false positives when detecting unreferenced URLs by properly handling
+regex syntax in Django URL patterns.
+
+Changes to url_matching.py:
+- Enhanced normalize_path() to strip ^ and $ regex anchors
+- Added support for /? optional trailing slash patterns
+- Added has_capture_groups() to detect dynamic URL patterns
+- Added extract_static_prefix() to get static portion before capture groups
+- Added is_dynamic_href() to detect {{ template syntax in hrefs
+- Modified match_href_to_pattern() to match dynamic hrefs against patterns
+  with capture groups by comparing static prefixes
+
+This fixes the issue where patterns like ^my/url$ were not matching
+hrefs like /my/url, and enables matching dynamic hrefs like
+/user/{{ user.id }}/ against patterns like ^user/(?P&lt;id&gt;\d+)/$
+
+Added 35 new tests covering:
+- Regex anchor stripping (^, $, both)
+- Optional trailing slash handling (/?)
+- Capture group detection and prefix extraction
+- Dynamic href matching
+- Edge cases (multiple groups, groups at start, character classes)
+
+All 201 tests pass with 100% coverage on url_matching.py. ([`28ba411`](https://github.com/nanorepublica/django-deadcode/commit/28ba4119a1eb140af21c0dcfce688dacfe36f833))
+
+### Style
+
+* style: apply pre-commit formatting fixes ([`875cac7`](https://github.com/nanorepublica/django-deadcode/commit/875cac7c0409a9d6b41b889387c9a441c48d6ae7))
+
 ## v0.5.0 (2025-11-26)
+
+### Chore
+
+* chore(release): 0.5.0 ([`9f959cd`](https://github.com/nanorepublica/django-deadcode/commit/9f959cd9ccc2e5629d832caaff10493ada3ecaad))
 
 ### Feature
 
@@ -257,7 +325,7 @@ Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/
 
 * chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
 
-* chore: set version to 0.3.0 for PyPI release
+* chore: set version to 0.3.0 for PyPI release 
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
