@@ -189,9 +189,10 @@ class TestMatchHrefToPatternEnhanced:
     # Dynamic URL matching
     def test_dynamic_pattern_matches_dynamic_href(self):
         """Test dynamic pattern matches href with {{ template syntax."""
-        assert match_href_to_pattern(
-            "/user/{{ user.id }}/", r"^user/(?P<id>\d+)/$"
-        ) is True
+        assert (
+            match_href_to_pattern("/user/{{ user.id }}/", r"^user/(?P<id>\d+)/$")
+            is True
+        )
 
     def test_dynamic_pattern_no_match_static_href(self):
         """Test dynamic pattern does NOT match static href."""
@@ -200,31 +201,39 @@ class TestMatchHrefToPatternEnhanced:
 
     def test_dynamic_pattern_with_prefix(self):
         """Test dynamic pattern with longer prefix matches."""
-        assert match_href_to_pattern(
-            "/api/users/{{ user.pk }}/edit/", r"^api/users/(?P<pk>\d+)/edit/$"
-        ) is True
+        assert (
+            match_href_to_pattern(
+                "/api/users/{{ user.pk }}/edit/", r"^api/users/(?P<pk>\d+)/edit/$"
+            )
+            is True
+        )
 
     def test_dynamic_pattern_wrong_prefix(self):
         """Test dynamic pattern does NOT match wrong prefix."""
-        assert match_href_to_pattern(
-            "/wrong/{{ user.id }}/", r"^user/(?P<id>\d+)/$"
-        ) is False
+        assert (
+            match_href_to_pattern("/wrong/{{ user.id }}/", r"^user/(?P<id>\d+)/$")
+            is False
+        )
 
     # Edge cases
     def test_multiple_capture_groups(self):
         """Test pattern with multiple capture groups."""
         # Should match based on static prefix only
-        assert match_href_to_pattern(
-            "/user/{{ user.id }}/posts/{{ post.id }}/",
-            r"^user/(?P<user_id>\d+)/posts/(?P<post_id>\d+)/$",
-        ) is True
+        assert (
+            match_href_to_pattern(
+                "/user/{{ user.id }}/posts/{{ post.id }}/",
+                r"^user/(?P<user_id>\d+)/posts/(?P<post_id>\d+)/$",
+            )
+            is True
+        )
 
     def test_capture_group_at_start_matches_any_dynamic(self):
         """Test pattern with capture group at start (empty prefix)."""
         # Empty prefix means any dynamic href could match
-        assert match_href_to_pattern(
-            "/{{ lang }}/about/", r"^(?P<lang>[a-z]{2})/about/$"
-        ) is True
+        assert (
+            match_href_to_pattern("/{{ lang }}/about/", r"^(?P<lang>[a-z]{2})/about/$")
+            is True
+        )
 
     def test_character_class_not_capture_group(self):
         """Test character classes [a-z] are NOT detected as capture groups."""
@@ -235,9 +244,12 @@ class TestMatchHrefToPatternEnhanced:
 
     def test_non_capturing_group_is_dynamic(self):
         """Test non-capturing groups (?:...) are treated as dynamic."""
-        assert match_href_to_pattern(
-            "/articles/{{ page }}/", r"^articles/(?:page-)?(?P<num>\d+)/$"
-        ) is True
+        assert (
+            match_href_to_pattern(
+                "/articles/{{ page }}/", r"^articles/(?:page-)?(?P<num>\d+)/$"
+            )
+            is True
+        )
 
 
 class TestFindMatchingPatterns:
