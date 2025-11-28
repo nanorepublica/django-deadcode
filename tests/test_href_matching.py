@@ -1,7 +1,10 @@
 """Tests for href to URL pattern matching functionality."""
 
 from django_deadcode.utils.url_matching import (
+    extract_static_prefix,
     find_matching_url_patterns,
+    has_capture_groups,
+    is_dynamic_href,
     match_href_to_pattern,
     normalize_path,
 )
@@ -33,6 +36,32 @@ class TestPathNormalization:
     def test_normalize_root_path(self):
         """Test normalization of root path /."""
         assert normalize_path("/") == ""
+
+    # Tests for regex anchor handling (Task 1.1)
+    def test_normalize_strips_caret_anchor(self):
+        """Test that leading ^ anchor is stripped from patterns."""
+        assert normalize_path("^about/") == "about/"
+
+    def test_normalize_strips_dollar_anchor(self):
+        """Test that trailing $ anchor is stripped from patterns."""
+        assert normalize_path("about/$") == "about/"
+
+    def test_normalize_strips_both_anchors(self):
+        """Test that both ^ and $ anchors are stripped."""
+        assert normalize_path("^about/$") == "about/"
+
+    def test_normalize_strips_anchors_multi_segment(self):
+        """Test anchor stripping on multi-segment paths."""
+        assert normalize_path("^users/profile/$") == "users/profile/"
+
+    # Tests for optional trailing slash handling
+    def test_normalize_optional_slash_at_end(self):
+        """Test that /? optional trailing slash is converted to /."""
+        assert normalize_path("^about/?$") == "about/"
+
+    def test_normalize_optional_slash_without_anchors(self):
+        """Test optional slash handling without anchors."""
+        assert normalize_path("about/?") == "about/"
 
 
 class TestHrefToPatternMatching:
@@ -83,6 +112,132 @@ class TestHrefToPatternMatching:
     def test_case_sensitive_match(self):
         """Test that matching is case-sensitive."""
         assert not match_href_to_pattern("/About/", "about/")
+
+
+class TestCaptureGroupHandling:
+    """Test suite for capture group detection and dynamic URL matching."""
+
+    # Tests for has_capture_groups()
+    def test_has_capture_groups_named(self):
+        """Test detection of named capture groups (?P<name>...)."""
+        assert has_capture_groups(r"^user/(?P<id>\d+)/$") is True
+
+    def test_has_capture_groups_unnamed(self):
+        """Test detection of unnamed capture groups (...)."""
+        assert has_capture_groups(r"^user/(\d+)/$") is True
+
+    def test_has_capture_groups_none(self):
+        """Test that static patterns return False."""
+        assert has_capture_groups("^about/$") is False
+
+    def test_has_capture_groups_with_non_capturing(self):
+        """Test detection of non-capturing groups (?:...)."""
+        assert has_capture_groups(r"^user/(?:\d+)/$") is True
+
+    # Tests for extract_static_prefix()
+    def test_extract_static_prefix_simple(self):
+        """Test extracting prefix before capture group."""
+        assert extract_static_prefix(r"^user/(?P<id>\d+)/$") == "user/"
+
+    def test_extract_static_prefix_nested(self):
+        """Test extracting prefix from multi-segment pattern."""
+        assert extract_static_prefix(r"^api/v1/users/(?P<id>\d+)/$") == "api/v1/users/"
+
+    def test_extract_static_prefix_no_groups(self):
+        """Test that pattern without groups returns full normalized path."""
+        assert extract_static_prefix("^about/$") == "about/"
+
+    def test_extract_static_prefix_group_at_start(self):
+        """Test pattern with capture group at start returns empty prefix."""
+        assert extract_static_prefix(r"^(?P<lang>[a-z]{2})/about/$") == ""
+
+    # Tests for is_dynamic_href()
+    def test_is_dynamic_href_with_template_var(self):
+        """Test detection of Django template variable syntax."""
+        assert is_dynamic_href("/user/{{ user.id }}/") is True
+
+    def test_is_dynamic_href_static(self):
+        """Test that static hrefs return False."""
+        assert is_dynamic_href("/user/123/") is False
+
+
+class TestMatchHrefToPatternEnhanced:
+    """Test suite for enhanced href to pattern matching with regex support."""
+
+    # Regex anchor matching (previously failing - the original bug)
+    def test_match_with_caret_anchor(self):
+        """Test href matches pattern with ^ anchor."""
+        assert match_href_to_pattern("/about/", "^about/") is True
+
+    def test_match_with_dollar_anchor(self):
+        """Test href matches pattern with $ anchor."""
+        assert match_href_to_pattern("/about/", "about/$") is True
+
+    def test_match_with_both_anchors(self):
+        """Test href matches pattern with both ^ and $ anchors."""
+        assert match_href_to_pattern("/about/", "^about/$") is True
+
+    # Optional trailing slash matching
+    def test_match_optional_slash_with_slash(self):
+        """Test href with trailing slash matches /? pattern."""
+        assert match_href_to_pattern("/about/", "^about/?$") is True
+
+    def test_match_optional_slash_without_slash(self):
+        """Test href without trailing slash matches /? pattern."""
+        assert match_href_to_pattern("/about", "^about/?$") is True
+
+    # Dynamic URL matching
+    def test_dynamic_pattern_matches_dynamic_href(self):
+        """Test dynamic pattern matches href with {{ template syntax."""
+        assert match_href_to_pattern(
+            "/user/{{ user.id }}/", r"^user/(?P<id>\d+)/$"
+        ) is True
+
+    def test_dynamic_pattern_no_match_static_href(self):
+        """Test dynamic pattern does NOT match static href."""
+        # Static href with actual number cannot match dynamic pattern
+        assert match_href_to_pattern("/user/123/", r"^user/(?P<id>\d+)/$") is False
+
+    def test_dynamic_pattern_with_prefix(self):
+        """Test dynamic pattern with longer prefix matches."""
+        assert match_href_to_pattern(
+            "/api/users/{{ user.pk }}/edit/", r"^api/users/(?P<pk>\d+)/edit/$"
+        ) is True
+
+    def test_dynamic_pattern_wrong_prefix(self):
+        """Test dynamic pattern does NOT match wrong prefix."""
+        assert match_href_to_pattern(
+            "/wrong/{{ user.id }}/", r"^user/(?P<id>\d+)/$"
+        ) is False
+
+    # Edge cases
+    def test_multiple_capture_groups(self):
+        """Test pattern with multiple capture groups."""
+        # Should match based on static prefix only
+        assert match_href_to_pattern(
+            "/user/{{ user.id }}/posts/{{ post.id }}/",
+            r"^user/(?P<user_id>\d+)/posts/(?P<post_id>\d+)/$",
+        ) is True
+
+    def test_capture_group_at_start_matches_any_dynamic(self):
+        """Test pattern with capture group at start (empty prefix)."""
+        # Empty prefix means any dynamic href could match
+        assert match_href_to_pattern(
+            "/{{ lang }}/about/", r"^(?P<lang>[a-z]{2})/about/$"
+        ) is True
+
+    def test_character_class_not_capture_group(self):
+        """Test character classes [a-z] are NOT detected as capture groups."""
+        # Character class is NOT a capture group - should be static match
+        assert has_capture_groups("^files/[a-z]+.pdf$") is False
+        # This is a static pattern, so exact match is needed
+        assert match_href_to_pattern("/files/test.pdf", "^files/[a-z]+.pdf$") is False
+
+    def test_non_capturing_group_is_dynamic(self):
+        """Test non-capturing groups (?:...) are treated as dynamic."""
+        assert match_href_to_pattern(
+            "/articles/{{ page }}/", r"^articles/(?:page-)?(?P<num>\d+)/$"
+        ) is True
 
 
 class TestFindMatchingPatterns:
