@@ -151,3 +151,146 @@ class TestTemplateHrefExtraction:
         result = analyzer._analyze_template_content(content, "test.html")
 
         assert "/uppercase/" in result["hrefs"]
+
+
+class TestCommentStripping:
+    """Test suite for comment stripping before URL extraction."""
+
+    def test_url_in_html_comment_excluded(self):
+        """Test that URLs inside HTML comments are NOT extracted."""
+        content = """
+            <!-- Old link: /deprecated/path/ -->
+            <a href="/active/">Active</a>
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/active/" in result["hrefs"]
+        assert "/deprecated/path/" not in result["hrefs"]
+
+    def test_url_in_js_multiline_comment_excluded(self):
+        """Test that URLs inside JS multi-line comments are NOT extracted."""
+        content = """
+            <script>
+            /*
+             * Old endpoints:
+             * /api/v1/old/
+             * /api/v1/deprecated/
+             */
+            const url = "/api/v2/current/";
+            </script>
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/api/v2/current/" in result["hrefs"]
+        assert "/api/v1/old/" not in result["hrefs"]
+        assert "/api/v1/deprecated/" not in result["hrefs"]
+
+    def test_url_in_js_singleline_comment_excluded(self):
+        """Test that URLs inside JS single-line comments are NOT extracted."""
+        content = """
+            <script>
+            // const oldUrl = "/old/endpoint/";
+            const newUrl = "/new/endpoint/";
+            </script>
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/new/endpoint/" in result["hrefs"]
+        assert "/old/endpoint/" not in result["hrefs"]
+
+    def test_protocol_urls_not_affected_by_comment_stripping(self):
+        """Test that protocol URLs (https://) are NOT mistaken for comments."""
+        content = """
+            <a href="https://example.com">External</a>
+            <script>const url = "/internal/";</script>
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        # Internal URL should be extracted
+        assert "/internal/" in result["hrefs"]
+        # External URL should be excluded (not starting with /)
+        assert "https://example.com" not in result["hrefs"]
+
+
+class TestExpandedUrlDetection:
+    """Test suite for expanded URL detection beyond href attributes."""
+
+    def test_url_in_data_attribute(self):
+        """Test URL extraction from data-* attributes."""
+        content = '<div data-url="/api/users/"></div>'
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/api/users/" in result["hrefs"]
+
+    def test_url_in_javascript_string(self):
+        """Test URL extraction from JavaScript strings."""
+        content = """
+            <script>
+            const url = "/api/endpoint/";
+            fetch("/api/data/");
+            </script>
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/api/endpoint/" in result["hrefs"]
+        assert "/api/data/" in result["hrefs"]
+
+    def test_url_in_inline_event_handler(self):
+        """Test URL extraction from inline event handlers."""
+        content = """<button onclick="location.href='/dashboard/'">Go</button>"""
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/dashboard/" in result["hrefs"]
+
+    def test_url_in_json_config(self):
+        """Test URL extraction from JSON embedded in templates."""
+        content = """
+            <script>
+            const config = {
+                "apiUrl": "/api/v1/",
+                "dashboardUrl": "/dashboard/"
+            };
+            </script>
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/api/v1/" in result["hrefs"]
+        assert "/dashboard/" in result["hrefs"]
+
+    def test_dynamic_url_with_template_variable(self):
+        """Test URL extraction with Django template variables."""
+        content = """
+            <a href="/user/{{ user.id }}/">Profile</a>
+            <script>const url = "/items/{{ item.pk }}/edit/";</script>
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/user/{{ user.id }}/" in result["hrefs"]
+        assert "/items/{{ item.pk }}/edit/" in result["hrefs"]
+
+    def test_urls_in_comments_not_extracted(self):
+        """Test that URLs inside any type of comment are NOT extracted."""
+        content = """
+            <!-- /html/comment/url/ -->
+            <script>
+            // /singleline/comment/url/
+            /* /multiline/comment/url/ */
+            const activeUrl = "/active/url/";
+            </script>
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/active/url/" in result["hrefs"]
+        assert "/html/comment/url/" not in result["hrefs"]
+        assert "/singleline/comment/url/" not in result["hrefs"]
+        assert "/multiline/comment/url/" not in result["hrefs"]

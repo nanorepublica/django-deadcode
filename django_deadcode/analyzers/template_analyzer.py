@@ -13,6 +13,14 @@ class TemplateAnalyzer:
     INCLUDE_PATTERN = re.compile(r'{%\s*include\s+["\']([^"\']+)["\']', re.MULTILINE)
     EXTENDS_PATTERN = re.compile(r'{%\s*extends\s+["\']([^"\']+)["\']', re.MULTILINE)
 
+    # Comment patterns for stripping before URL extraction
+    HTML_COMMENT_PATTERN = re.compile(r"<!--.*?-->", re.DOTALL)
+    JS_MULTILINE_COMMENT_PATTERN = re.compile(r"/\*.*?\*/", re.DOTALL)
+    JS_SINGLELINE_COMMENT_PATTERN = re.compile(r"(?<!:)//.*$", re.MULTILINE)
+
+    # Pattern for internal URLs anywhere in content (quoted strings starting with /)
+    INTERNAL_URL_PATTERN = re.compile(r'["\'](/(?!/)[^"\']*)["\']')
+
     def __init__(
         self, template_dirs: list[Path] | None = None, base_dir: Path | None = None
     ) -> None:
@@ -47,6 +55,27 @@ class TemplateAnalyzer:
             return True
         except ValueError:
             return False
+
+    def _strip_comments(self, content: str) -> str:
+        """
+        Strip HTML and JavaScript comments from content.
+
+        This removes comments before URL extraction to prevent false positives
+        from URLs mentioned in commented-out code.
+
+        Args:
+            content: Template content as string
+
+        Returns:
+            Content with comments removed
+        """
+        # Remove HTML comments first
+        content = self.HTML_COMMENT_PATTERN.sub("", content)
+        # Remove JS multi-line comments
+        content = self.JS_MULTILINE_COMMENT_PATTERN.sub("", content)
+        # Remove JS single-line comments (but not :// in URLs)
+        content = self.JS_SINGLELINE_COMMENT_PATTERN.sub("", content)
+        return content
 
     def normalize_template_path(self, filesystem_path: Path) -> str:
         """
@@ -131,13 +160,13 @@ class TemplateAnalyzer:
         # Extract {% url %} tags
         url_tags = set(self.URL_TAG_PATTERN.findall(content))
 
-        # Extract href attributes (filter for internal URLs starting with /)
-        all_hrefs = self.HREF_PATTERN.findall(content)
-        internal_hrefs = {
-            href
-            for href in all_hrefs
-            if href.startswith("/") and not href.startswith("//")
-        }
+        # Strip comments before extracting internal URLs
+        # This prevents false positives from URLs in commented-out code
+        cleaned_content = self._strip_comments(content)
+
+        # Extract internal URLs from anywhere in the template (not just href)
+        # This catches URLs in JavaScript, data attributes, event handlers, etc.
+        internal_hrefs = set(self.INTERNAL_URL_PATTERN.findall(cleaned_content))
 
         # Extract {% include %} tags
         includes = set(self.INCLUDE_PATTERN.findall(content))
