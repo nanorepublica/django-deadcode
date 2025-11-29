@@ -1,6 +1,56 @@
 # CHANGELOG
 
+## v0.6.0 (2025-11-29)
+
+### Chore
+
+* chore: fix trailing whitespace in CHANGELOG.md ([`a9461e6`](https://github.com/nanorepublica/django-deadcode/commit/a9461e644aa943f107160defe46e050ee62aeb50))
+
+### Documentation
+
+* docs: add task list for URL detection implementation
+
+Break down implementation into 3 task groups with 15 sub-tasks:
+- Task Group 1: Comment stripping (4 tests + implementation)
+- Task Group 2: URL pattern enhancement (6 tests + implementation)
+- Task Group 3: Test coverage review and gap analysis ([`527fd4b`](https://github.com/nanorepublica/django-deadcode/commit/527fd4b981e6537505baf5c1d812c1948a7f818e))
+
+* docs: add spec for expanded URL detection in templates
+
+Add specification to detect internal URLs anywhere in HTML templates,
+not just in href attributes. Includes requirements to:
+- Match URLs in JS code, data attributes, event handlers
+- Exclude URLs inside HTML and JS comments
+- Support dynamic URLs with Django template variables ([`6747e6b`](https://github.com/nanorepublica/django-deadcode/commit/6747e6b207881e7d51c9eaf084c59c4d747d4c25))
+
+### Feature
+
+* feat: release ([`ec03b3a`](https://github.com/nanorepublica/django-deadcode/commit/ec03b3aa7eb586505fd2dd14507d82a7c2c60dec))
+
+* feat: Reduce false positives in URL detection ([`2500e5e`](https://github.com/nanorepublica/django-deadcode/commit/2500e5ea4ef58c1f2ccdbe16700ffb75977914af))
+
+* feat: expand URL detection to find URLs anywhere in templates
+
+Instead of only detecting URLs in href attributes, now detect internal
+URL strings anywhere in HTML template files. This catches URLs in:
+- JavaScript code (fetch, const url = ...)
+- Data attributes (data-url=&#34;/api/...&#34;)
+- Inline event handlers (onclick=&#34;location.href=&#39;...&#39;&#34;)
+- JSON configs embedded in templates
+
+Also excludes URLs inside comments:
+- HTML comments (&lt;!-- ... --&gt;)
+- JS single-line comments (// ...)
+- JS multi-line comments (/* ... */)
+
+Added 10 new tests covering the expanded detection and comment stripping.
+All 211 existing tests continue to pass. ([`88f418e`](https://github.com/nanorepublica/django-deadcode/commit/88f418e3c9c117e828d0c6a35982211b0c0b1fee))
+
 ## v0.5.1 (2025-11-28)
+
+### Chore
+
+* chore(release): 0.5.1 ([`31e50a7`](https://github.com/nanorepublica/django-deadcode/commit/31e50a700b2569e54ea1259d9e4949a809dad231))
 
 ### Documentation
 
@@ -325,7 +375,7 @@ Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/
 
 * chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
 
-* chore: set version to 0.3.0 for PyPI release
+* chore: set version to 0.3.0 for PyPI release 
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
