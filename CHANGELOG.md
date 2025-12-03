@@ -1,8 +1,18 @@
 # CHANGELOG
 
+## v0.7.0 (2025-12-03)
+
+### Feature
+
+* feat: release ([`624aa18`](https://github.com/nanorepublica/django-deadcode/commit/624aa183efbffdf3ff7159d2d23128691dd3f2b7))
+
+* feat: release ([`848b07b`](https://github.com/nanorepublica/django-deadcode/commit/848b07b27d9c27340d1a45009ba102704c717cf3))
+
 ## v0.6.0 (2025-11-29)
 
 ### Chore
+
+* chore(release): 0.6.0 ([`58b27d6`](https://github.com/nanorepublica/django-deadcode/commit/58b27d630294e7ac2563092735ae8c68edd4b593))
 
 * chore: fix trailing whitespace in CHANGELOG.md ([`a9461e6`](https://github.com/nanorepublica/django-deadcode/commit/a9461e644aa943f107160defe46e050ee62aeb50))
 
@@ -375,7 +385,7 @@ Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/
 
 * chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
 
-* chore: set version to 0.3.0 for PyPI release
+* chore: set version to 0.3.0 for PyPI release 
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
