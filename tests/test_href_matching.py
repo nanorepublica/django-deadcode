@@ -63,6 +63,86 @@ class TestPathNormalization:
         """Test optional slash handling without anchors."""
         assert normalize_path("about/?") == "about/"
 
+    # Tests for embedded regex anchors (from nested includes with mixed path/re_path)
+    def test_normalize_embedded_caret_anchor(self):
+        """Test that embedded ^ anchor is stripped from middle of pattern.
+
+        This happens when using: path('prefix/', include(...)) + re_path(r'^suffix/$', ...)
+        The accumulated pattern becomes: 'prefix/^suffix/$'
+        """
+        assert normalize_path("prefix/^suffix/$") == "prefix/suffix/"
+
+    def test_normalize_embedded_dollar_anchor(self):
+        """Test that embedded $ anchor is stripped from middle of pattern."""
+        assert normalize_path("prefix/$suffix/") == "prefix/suffix/"
+
+    def test_normalize_multiple_embedded_anchors(self):
+        """Test normalization with multiple embedded anchors.
+
+        This happens with deeply nested includes mixing path() and re_path().
+        """
+        assert normalize_path("a/^b/^c/$") == "a/b/c/"
+
+    def test_normalize_real_world_nested_include_pattern(self):
+        """Test the exact pattern from the reported bug.
+
+        URL config: path('nutritionist/', include(...)) + re_path(r'^client/client_mfp_code/$', ...)
+        """
+        assert (
+            normalize_path("nutritionist/^client/client_mfp_code/$")
+            == "nutritionist/client/client_mfp_code/"
+        )
+
+
+class TestEmbeddedAnchorMatching:
+    """Test suite for matching hrefs against patterns with embedded anchors.
+
+    These tests cover the bug where nested include() statements with mixed
+    path() and re_path() produce patterns with regex anchors in the middle,
+    e.g., 'nutritionist/^client/mfp/$' instead of '^nutritionist/client/mfp/$'.
+    """
+
+    def test_match_embedded_caret_anchor(self):
+        """Test href matches pattern with embedded ^ anchor."""
+        href = "/prefix/suffix/"
+        pattern = "prefix/^suffix/$"
+        assert match_href_to_pattern(href, pattern) is True
+
+    def test_match_real_world_nested_include(self):
+        """Test the exact scenario from the reported bug."""
+        href = "/nutritionist/client/client_mfp_code/"
+        pattern = "nutritionist/^client/client_mfp_code/$"
+        assert match_href_to_pattern(href, pattern) is True
+
+    def test_match_multiple_embedded_anchors(self):
+        """Test matching with multiple embedded anchors from deep nesting."""
+        href = "/a/b/c/"
+        pattern = "a/^b/^c/$"
+        assert match_href_to_pattern(href, pattern) is True
+
+    def test_integration_find_matching_patterns_with_embedded_anchors(self):
+        """Integration test: find_matching_url_patterns with embedded anchors."""
+        hrefs = {"/nutritionist/client/client_mfp_code/"}
+        url_patterns = {
+            "client_mfp_code": {
+                "pattern": "nutritionist/^client/client_mfp_code/$",
+                "name": "client_mfp_code",
+            },
+            "other_url": {
+                "pattern": "other/path/",
+                "name": "other_url",
+            },
+        }
+        matched = find_matching_url_patterns(hrefs, url_patterns)
+        assert "client_mfp_code" in matched
+        assert "other_url" not in matched
+
+    def test_no_false_match_with_similar_patterns(self):
+        """Test that embedded anchor removal doesn't cause false matches."""
+        href = "/prefix/suffix/"
+        pattern = "prefix/^different/$"  # Different suffix
+        assert match_href_to_pattern(href, pattern) is False
+
 
 class TestHrefToPatternMatching:
     """Test suite for matching hrefs to URL patterns."""
