@@ -21,8 +21,20 @@ class TemplateAnalyzer:
     # Pattern for internal URLs anywhere in content (quoted strings starting with /)
     INTERNAL_URL_PATTERN = re.compile(r'["\'](/(?!/)[^"\']*)["\']')
 
+    # Extended pattern for template literals: `/api/${id}/edit/`
+    # Matches backtick strings starting with / and extracts the static prefix
+    TEMPLATE_LITERAL_PATTERN = re.compile(r"`(/[^`]*)`")
+
+    # Pattern to extract static prefix from template literal (before ${)
+    TEMPLATE_LITERAL_PREFIX_PATTERN = re.compile(r"^(/[^$`]*)")
+
     def __init__(
-        self, template_dirs: list[Path] | None = None, base_dir: Path | None = None
+        self,
+        template_dirs: list[Path] | None = None,
+        base_dir: Path | None = None,
+        static_dirs: list[Path] | None = None,
+        scan_static: bool = False,
+        url_detection: str = "basic",
     ) -> None:
         """
         Initialize the template analyzer.
@@ -30,14 +42,22 @@ class TemplateAnalyzer:
         Args:
             template_dirs: List of template directories to search
             base_dir: Project BASE_DIR for filtering templates (optional)
+            static_dirs: List of static directories to search for JS files (optional)
+            scan_static: Whether to scan static JavaScript files for URLs
+            url_detection: Detection level - 'basic' or 'extended' (default: basic)
         """
         self.template_dirs = template_dirs or []
         self.base_dir = base_dir.resolve() if base_dir else None
+        self.static_dirs = static_dirs or []
+        self.scan_static = scan_static
+        self.url_detection = url_detection
         self.templates: dict[str, dict] = {}
         self.url_references: dict[str, set[str]] = {}
         self.template_includes: dict[str, set[str]] = {}
         self.template_extends: dict[str, set[str]] = {}
         self.template_extensions = [".html", ".txt", ".xml", ".svg"]
+        self.static_extensions = [".js", ".mjs"]
+        self.static_files: dict[str, dict] = {}
 
     def _is_relative_to(self, path: Path, parent: Path) -> bool:
         """
@@ -146,6 +166,30 @@ class TemplateAnalyzer:
 
         return self._analyze_template_content(content, normalized_path)
 
+    def _extract_template_literal_urls(self, content: str) -> set[str]:
+        """
+        Extract URL prefixes from JavaScript template literals.
+
+        Finds template literals like `/api/${id}/edit/` and extracts the
+        static prefix (e.g., '/api/').
+
+        Args:
+            content: Content to search for template literals
+
+        Returns:
+            Set of static URL prefixes extracted from template literals
+        """
+        urls = set()
+        for match in self.TEMPLATE_LITERAL_PATTERN.findall(content):
+            # Extract the static prefix before any ${...} interpolation
+            prefix_match = self.TEMPLATE_LITERAL_PREFIX_PATTERN.match(match)
+            if prefix_match:
+                prefix = prefix_match.group(1)
+                # Only include if it has a meaningful path (not just /)
+                if prefix and len(prefix) > 1:
+                    urls.add(prefix)
+        return urls
+
     def _analyze_template_content(self, content: str, template_name: str) -> dict:
         """
         Analyze template content for URL references.
@@ -167,6 +211,11 @@ class TemplateAnalyzer:
         # Extract internal URLs from anywhere in the template (not just href)
         # This catches URLs in JavaScript, data attributes, event handlers, etc.
         internal_hrefs = set(self.INTERNAL_URL_PATTERN.findall(cleaned_content))
+
+        # Extended detection: also extract URLs from template literals
+        if self.url_detection == "extended":
+            template_literal_urls = self._extract_template_literal_urls(cleaned_content)
+            internal_hrefs.update(template_literal_urls)
 
         # Extract {% include %} tags
         includes = set(self.INCLUDE_PATTERN.findall(content))
@@ -295,13 +344,147 @@ class TemplateAnalyzer:
 
     def get_all_internal_hrefs(self) -> set[str]:
         """
-        Get all internal hrefs across all analyzed templates.
+        Get all internal hrefs across all analyzed templates and static files.
 
         Returns:
-            Set of all internal hrefs found in templates
+            Set of all internal hrefs found in templates and static files
         """
         all_hrefs = set()
         for template_data in self.templates.values():
             hrefs = template_data.get("hrefs", set())
             all_hrefs.update(hrefs)
+        # Also include hrefs from static files
+        for static_data in self.static_files.values():
+            hrefs = static_data.get("hrefs", set())
+            all_hrefs.update(hrefs)
         return all_hrefs
+
+    def normalize_static_path(self, filesystem_path: Path) -> str:
+        """
+        Convert filesystem path to a relative static file path.
+
+        This method finds the 'static/' directory in the path and returns
+        everything after it.
+
+        Args:
+            filesystem_path: Full filesystem path to static file
+
+        Returns:
+            Relative static file path (e.g., 'js/app.js')
+
+        Examples:
+            /app/myapp/static/js/app.js -> js/app.js
+            /app/static/vendor/lib.js -> vendor/lib.js
+        """
+        path_parts = filesystem_path.parts
+
+        # Find all occurrences of 'static' in path
+        static_indices = [i for i, part in enumerate(path_parts) if part == "static"]
+
+        if not static_indices:
+            # No 'static' directory found, return filename
+            return filesystem_path.name
+
+        # Use the last occurrence of 'static' directory
+        last_static_index = static_indices[-1]
+
+        # Get everything after 'static/'
+        relative_parts = path_parts[last_static_index + 1 :]
+
+        # Join with forward slashes
+        return "/".join(relative_parts)
+
+    def analyze_static_file(self, static_path: Path) -> dict:
+        """
+        Analyze a single static JavaScript file for URL references.
+
+        Args:
+            static_path: Path to the static file
+
+        Returns:
+            Dictionary containing analysis results (only hrefs for static files)
+        """
+        try:
+            content = static_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as e:
+            return {
+                "error": str(e),
+                "hrefs": set(),
+            }
+
+        # Normalize the static path for consistent storage
+        normalized_path = self.normalize_static_path(static_path)
+
+        return self._analyze_static_content(content, normalized_path)
+
+    def _analyze_static_content(self, content: str, static_name: str) -> dict:
+        """
+        Analyze static file content for URL references.
+
+        Unlike template analysis, this only extracts internal URLs (no {% url %} tags,
+        includes, or extends since those are Django template-specific).
+
+        Args:
+            content: Static file content as string
+            static_name: Name or path of the static file (should be normalized)
+
+        Returns:
+            Dictionary with set of hrefs found
+        """
+        # Strip comments before extracting internal URLs
+        cleaned_content = self._strip_comments(content)
+
+        # Extract internal URLs from the content
+        internal_hrefs = set(self.INTERNAL_URL_PATTERN.findall(cleaned_content))
+
+        # Extended detection: also extract URLs from template literals
+        if self.url_detection == "extended":
+            template_literal_urls = self._extract_template_literal_urls(cleaned_content)
+            internal_hrefs.update(template_literal_urls)
+
+        result = {
+            "hrefs": internal_hrefs,
+        }
+
+        # Store in instance variable using normalized static file name
+        self.static_files[static_name] = result
+
+        return result
+
+    def find_all_static_files(self) -> None:
+        """
+        Find and analyze all JavaScript files in configured static directories.
+
+        Only runs if scan_static is True. Filters by BASE_DIR if provided.
+        """
+        if not self.scan_static:
+            return
+
+        for static_dir in self.static_dirs:
+            if not static_dir.exists():
+                continue
+
+            for ext in self.static_extensions:
+                for static_path in static_dir.rglob(f"*{ext}"):
+                    # Filter by BASE_DIR if provided
+                    if self.base_dir:
+                        try:
+                            resolved = static_path.resolve()
+                            if not self._is_relative_to(resolved, self.base_dir):
+                                continue
+                        except (ValueError, OSError):
+                            continue
+
+                    # Skip minified files (often third-party)
+                    if ".min." in static_path.name:
+                        continue
+
+                    # Skip common vendor/node_modules directories
+                    path_str = str(static_path)
+                    if any(
+                        skip in path_str
+                        for skip in ["node_modules", "vendor", "bower_components"]
+                    ):
+                        continue
+
+                    self.analyze_static_file(static_path)

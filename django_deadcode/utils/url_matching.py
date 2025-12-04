@@ -13,15 +13,21 @@ def normalize_path(path: str) -> str:
     Normalize a path for comparison.
 
     Handles both hrefs (e.g., '/about/') and URL patterns (e.g., '^about/$').
-    Strips regex anchors and handles optional trailing slash patterns.
+    Strips regex anchors from ANYWHERE in the pattern (not just start/end)
+    and handles optional trailing slash patterns.
+
+    This handles the case where nested include() statements with mixed path()
+    and re_path() produce patterns with embedded anchors like:
+    'prefix/^suffix/$' -> 'prefix/suffix/'
 
     Normalization steps:
-    1. Strip regex anchors (^ and $)
+    1. Strip ALL regex anchors (^ and $) from anywhere in the pattern
     2. Convert optional trailing slash (/?) to /
     3. Remove leading slash
 
     Args:
-        path: URL path or pattern to normalize (e.g., '/about/', '^about/$')
+        path: URL path or pattern to normalize (e.g., '/about/', '^about/$',
+              'prefix/^suffix/$')
 
     Returns:
         Normalized path suitable for comparison (e.g., 'about/')
@@ -35,16 +41,16 @@ def normalize_path(path: str) -> str:
         'about/'
         >>> normalize_path('/')
         ''
+        >>> normalize_path('prefix/^suffix/$')
+        'prefix/suffix/'
     """
     # Handle empty or root path
     if not path or path == "/":
         return ""
 
-    # Strip regex anchors
-    if path.startswith("^"):
-        path = path[1:]
-    if path.endswith("$"):
-        path = path[:-1]
+    # Strip ALL regex anchors (handles embedded anchors from nested includes)
+    path = path.replace("^", "")
+    path = path.replace("$", "")
 
     # Handle optional trailing slash - convert /? to /
     if path.endswith("/?"):
