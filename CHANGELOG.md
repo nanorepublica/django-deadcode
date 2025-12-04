@@ -1,6 +1,119 @@
 # CHANGELOG
 
+## v0.8.0 (2025-12-04)
+
+### Documentation
+
+* docs: add spec for fixing unreferenced URL detection
+
+Root cause identified: When using nested include() with mixed path() and
+re_path(), regex anchors (^ and $) end up embedded in the middle of
+accumulated URL patterns. normalize_path() only strips anchors from
+start/end, so patterns like &#39;nutritionist/^client/mfp/$&#39; don&#39;t match
+href &#39;/nutritionist/client/mfp/&#39;.
+
+Fix: Change normalize_path() to use str.replace() instead of checking
+startswith()/endswith().
+
+Also adds specs for:
+- Static JavaScript file scanning (--scan-static flag)
+- Detection aggressiveness levels (--url-detection flag) ([`5a168bb`](https://github.com/nanorepublica/django-deadcode/commit/5a168bb205b5476c1e18546aeb52de6fd81513f2))
+
+### Feature
+
+* feat: add --url-detection flag for extended URL pattern detection
+
+Adds support for detecting URLs in JavaScript template literals when
+using the &#39;extended&#39; detection mode.
+
+New CLI option:
+  --url-detection [basic|extended]
+    - basic - default - Only detect static string URLs in quotes
+    - extended - Also detect URLs in template literals
+
+Features:
+- Extracts static URL prefixes from template literals before interpolation
+- Works in both template files and static JavaScript files
+- Combines with existing basic detection
+
+Tests added for template literal detection in various scenarios. ([`fc2bad6`](https://github.com/nanorepublica/django-deadcode/commit/fc2bad6e80382d87ba655e74e9670abd46ad685d))
+
+* feat: add --scan-static flag for JavaScript file scanning
+
+Adds support for scanning JavaScript files in static directories for
+URL references. This helps detect URLs used in external .js files that
+would otherwise be reported as unreferenced.
+
+New CLI option:
+  --scan-static    Scan JavaScript files in static directories
+
+Features:
+- Discovers static directories from STATICFILES_DIRS and app static folders
+- Scans .js and .mjs files for URL references
+- Skips minified files (.min.js) and vendor directories
+- Filters by BASE_DIR to exclude third-party code
+- URLs found in static files are included in href matching
+
+New TemplateAnalyzer methods:
+- find_all_static_files(): Discover and analyze JS files
+- analyze_static_file(): Analyze a single static file
+- normalize_static_path(): Get relative path for static files
+
+Tests added for:
+- URL extraction from JavaScript content
+- jQuery AJAX patterns (the original use case)
+- Fetch API calls
+- Comment exclusion in JS files
+- Static path normalization ([`6b7154e`](https://github.com/nanorepublica/django-deadcode/commit/6b7154e692e50b0d82128304e3f5ad1fc2066271))
+
+### Fix
+
+* fix: handle embedded regex anchors in URL patterns
+
+When using nested include() with mixed path() and re_path(), regex
+anchors (^ and $) end up embedded in the middle of accumulated URL
+patterns. For example:
+
+  path(&#39;nutritionist/&#39;, include(...)) + re_path(r&#39;^client/mfp/$&#39;, ...)
+
+produces the pattern: &#39;nutritionist/^client/mfp/$&#39;
+
+The previous normalize_path() only stripped ^ from start and $ from end,
+so patterns like this would never match their corresponding hrefs.
+
+Fix: Change normalize_path() to use str.replace() to strip ALL
+occurrences of ^ and $ from anywhere in the pattern.
+
+This fixes false positives where URLs used in inline JavaScript were
+incorrectly reported as unreferenced because the pattern matching failed.
+
+Tests added:
+- test_normalize_embedded_caret_anchor
+- test_normalize_embedded_dollar_anchor
+- test_normalize_multiple_embedded_anchors
+- test_normalize_real_world_nested_include_pattern
+- TestEmbeddedAnchorMatching class with integration tests ([`86e0959`](https://github.com/nanorepublica/django-deadcode/commit/86e095917347e1d9372e90246371ad335bda7357))
+
+### Style
+
+* style: fix linting issues from pre-commit
+
+- Fix trailing whitespace in CHANGELOG.md
+- Use union syntax in isinstance call (UP038)
+- Fix line length issues in test docstrings
+- Apply ruff formatting ([`e716bf6`](https://github.com/nanorepublica/django-deadcode/commit/e716bf672a70e99901f990c7ba8a035f140b4363))
+
+### Unknown
+
+* Merge pull request #21 from nanorepublica/claude/fix-unreferenced-url-012EZbq8XwJPj8Ao4wWW6VAf
+
+feat: extended url detection ([`8d20104`](https://github.com/nanorepublica/django-deadcode/commit/8d20104303ceb9531a827c2ac40c52f7bca79449))
+
 ## v0.7.0 (2025-12-03)
+
+### Chore
+
+* chore(release): 0.7.0 ([`d8cd4b2`](https://github.com/nanorepublica/django-deadcode/commit/d8cd4b267fdbbca8f19c21012e051f5efd53cca1))
 
 ### Feature
 
@@ -385,7 +498,7 @@ Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/
 
 * chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
 
-* chore: set version to 0.3.0 for PyPI release
+* chore: set version to 0.3.0 for PyPI release 
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
