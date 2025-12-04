@@ -294,3 +294,147 @@ class TestExpandedUrlDetection:
         assert "/html/comment/url/" not in result["hrefs"]
         assert "/singleline/comment/url/" not in result["hrefs"]
         assert "/multiline/comment/url/" not in result["hrefs"]
+
+
+class TestStaticFileScanning:
+    """Test suite for JavaScript static file scanning."""
+
+    def test_extract_url_from_js_content(self):
+        """Test URL extraction from JavaScript content."""
+        js_content = """
+            function saveData() {
+                $.ajax({
+                    url: '/api/save/',
+                    method: 'POST'
+                });
+            }
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        assert "/api/save/" in result["hrefs"]
+
+    def test_extract_url_from_fetch_call(self):
+        """Test URL extraction from fetch() calls."""
+        js_content = """
+            fetch('/api/users/')
+                .then(response => response.json());
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_static_content(js_content, "api.js")
+
+        assert "/api/users/" in result["hrefs"]
+
+    def test_extract_multiple_urls_from_js(self):
+        """Test extraction of multiple URLs from JavaScript."""
+        js_content = """
+            const API = {
+                users: '/api/users/',
+                posts: '/api/posts/',
+                comments: '/api/comments/'
+            };
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_static_content(js_content, "config.js")
+
+        assert "/api/users/" in result["hrefs"]
+        assert "/api/posts/" in result["hrefs"]
+        assert "/api/comments/" in result["hrefs"]
+        assert len(result["hrefs"]) == 3
+
+    def test_exclude_external_urls_from_js(self):
+        """Test that external URLs are excluded from JavaScript files."""
+        js_content = """
+            const external = "https://example.com/api/";
+            const internal = "/api/internal/";
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_static_content(js_content, "urls.js")
+
+        assert "/api/internal/" in result["hrefs"]
+        assert "https://example.com/api/" not in result["hrefs"]
+
+    def test_urls_in_js_comments_excluded(self):
+        """Test that URLs in JavaScript comments are excluded."""
+        js_content = """
+            // Old endpoint: /api/v1/deprecated/
+            /* Also deprecated: /api/v1/old/ */
+            const url = '/api/v2/current/';
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_static_content(js_content, "api.js")
+
+        assert "/api/v2/current/" in result["hrefs"]
+        assert "/api/v1/deprecated/" not in result["hrefs"]
+        assert "/api/v1/old/" not in result["hrefs"]
+
+    def test_static_files_included_in_all_hrefs(self):
+        """Test that static file hrefs are included in get_all_internal_hrefs()."""
+        analyzer = TemplateAnalyzer()
+
+        # Add a template
+        analyzer._analyze_template_content(
+            '<a href="/template/url/">Link</a>', "test.html"
+        )
+
+        # Add a static file
+        analyzer._analyze_static_content(
+            'const url = "/static/url/";', "app.js"
+        )
+
+        all_hrefs = analyzer.get_all_internal_hrefs()
+
+        assert "/template/url/" in all_hrefs
+        assert "/static/url/" in all_hrefs
+        assert len(all_hrefs) == 2
+
+    def test_normalize_static_path(self):
+        """Test normalization of static file paths."""
+        from pathlib import Path
+
+        analyzer = TemplateAnalyzer()
+
+        # Test typical static path
+        path1 = Path("/app/myapp/static/js/app.js")
+        assert analyzer.normalize_static_path(path1) == "js/app.js"
+
+        # Test nested static path
+        path2 = Path("/project/static/vendor/lib.js")
+        assert analyzer.normalize_static_path(path2) == "vendor/lib.js"
+
+        # Test path without 'static' directory
+        path3 = Path("/app/scripts/main.js")
+        assert analyzer.normalize_static_path(path3) == "main.js"
+
+    def test_scan_static_disabled_by_default(self):
+        """Test that static scanning is disabled by default."""
+        analyzer = TemplateAnalyzer()
+        assert analyzer.scan_static is False
+        assert analyzer.static_files == {}
+
+    def test_scan_static_enabled(self):
+        """Test that static scanning can be enabled."""
+        analyzer = TemplateAnalyzer(scan_static=True)
+        assert analyzer.scan_static is True
+
+    def test_jquery_ajax_url_extraction(self):
+        """Test URL extraction from jQuery AJAX patterns (the original use case)."""
+        js_content = """
+            function saveMFPCode(){
+              code = $('#client_mfp_code').val()
+              $.ajax({
+                        url: '/nutritionist/client/client_mfp_code/',
+                        data: {
+                        'client_id': clientId,
+                        'code': code,
+                        },
+                        success: function (data) {
+                          location.reload()
+                        }
+                    });
+            }
+        """
+        analyzer = TemplateAnalyzer()
+        result = analyzer._analyze_static_content(js_content, "nutritionist.js")
+
+        assert "/nutritionist/client/client_mfp_code/" in result["hrefs"]

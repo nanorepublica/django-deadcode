@@ -52,6 +52,12 @@ class Command(BaseCommand):
             default=False,
             help="Show template include/extends relationships in output",
         )
+        parser.add_argument(
+            "--scan-static",
+            action="store_true",
+            default=False,
+            help="Also scan JavaScript files in static directories for URL references",
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Execute the command."""
@@ -60,9 +66,20 @@ class Command(BaseCommand):
         # Get BASE_DIR for template filtering
         base_dir = self._get_base_dir()
 
+        # Get scan_static option
+        scan_static = options.get("scan_static", False)
+
+        # Get static directories if scanning static files
+        static_dirs = self._get_static_dirs() if scan_static else []
+
         # Initialize analyzers
         template_dirs = self._get_template_dirs(options.get("templates_dir"))
-        template_analyzer = TemplateAnalyzer(template_dirs, base_dir=base_dir)
+        template_analyzer = TemplateAnalyzer(
+            template_dirs,
+            base_dir=base_dir,
+            static_dirs=static_dirs,
+            scan_static=scan_static,
+        )
         url_analyzer = URLAnalyzer()
         view_analyzer = ViewAnalyzer()
         reverse_analyzer = ReverseAnalyzer()
@@ -70,6 +87,11 @@ class Command(BaseCommand):
         # Analyze templates
         self.stdout.write("Analyzing templates...")
         template_analyzer.find_all_templates()
+
+        # Analyze static JavaScript files if enabled
+        if scan_static:
+            self.stdout.write("Analyzing static JavaScript files...")
+            template_analyzer.find_all_static_files()
 
         # Analyze URLs
         self.stdout.write("Analyzing URL patterns...")
@@ -181,6 +203,41 @@ class Command(BaseCommand):
             app_dirs.append(Path(app_config.path))
 
         return app_dirs
+
+    def _get_static_dirs(self) -> list[Path]:
+        """
+        Get static directories to analyze for JavaScript files.
+
+        Discovers static directories from:
+        1. STATICFILES_DIRS setting
+        2. 'static/' folder in each installed app
+
+        Returns:
+            List of Path objects for static directories
+        """
+        from django.apps import apps
+
+        static_dirs = []
+
+        # Get STATICFILES_DIRS from settings
+        if hasattr(settings, "STATICFILES_DIRS"):
+            for dir_path in settings.STATICFILES_DIRS:
+                # Handle both string paths and tuples (prefix, path)
+                if isinstance(dir_path, (list, tuple)):
+                    dir_path = dir_path[1]
+                static_dirs.append(Path(dir_path))
+
+        # Get static directories in each app
+        for app_config in apps.get_app_configs():
+            # Skip Django's built-in apps
+            if app_config.name.startswith("django."):
+                continue
+
+            app_static_dir = Path(app_config.path) / "static"
+            if app_static_dir.exists():
+                static_dirs.append(app_static_dir)
+
+        return static_dirs
 
     def _find_transitively_referenced_templates(
         self,
