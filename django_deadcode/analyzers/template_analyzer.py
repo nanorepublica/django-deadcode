@@ -21,12 +21,20 @@ class TemplateAnalyzer:
     # Pattern for internal URLs anywhere in content (quoted strings starting with /)
     INTERNAL_URL_PATTERN = re.compile(r'["\'](/(?!/)[^"\']*)["\']')
 
+    # Extended pattern for template literals: `/api/${id}/edit/`
+    # Matches backtick strings starting with / and extracts the static prefix
+    TEMPLATE_LITERAL_PATTERN = re.compile(r"`(/[^`]*)`")
+
+    # Pattern to extract static prefix from template literal (before ${)
+    TEMPLATE_LITERAL_PREFIX_PATTERN = re.compile(r"^(/[^$`]*)")
+
     def __init__(
         self,
         template_dirs: list[Path] | None = None,
         base_dir: Path | None = None,
         static_dirs: list[Path] | None = None,
         scan_static: bool = False,
+        url_detection: str = "basic",
     ) -> None:
         """
         Initialize the template analyzer.
@@ -36,11 +44,13 @@ class TemplateAnalyzer:
             base_dir: Project BASE_DIR for filtering templates (optional)
             static_dirs: List of static directories to search for JS files (optional)
             scan_static: Whether to scan static JavaScript files for URLs
+            url_detection: Detection level - 'basic' or 'extended' (default: basic)
         """
         self.template_dirs = template_dirs or []
         self.base_dir = base_dir.resolve() if base_dir else None
         self.static_dirs = static_dirs or []
         self.scan_static = scan_static
+        self.url_detection = url_detection
         self.templates: dict[str, dict] = {}
         self.url_references: dict[str, set[str]] = {}
         self.template_includes: dict[str, set[str]] = {}
@@ -156,6 +166,30 @@ class TemplateAnalyzer:
 
         return self._analyze_template_content(content, normalized_path)
 
+    def _extract_template_literal_urls(self, content: str) -> set[str]:
+        """
+        Extract URL prefixes from JavaScript template literals.
+
+        Finds template literals like `/api/${id}/edit/` and extracts the
+        static prefix (e.g., '/api/').
+
+        Args:
+            content: Content to search for template literals
+
+        Returns:
+            Set of static URL prefixes extracted from template literals
+        """
+        urls = set()
+        for match in self.TEMPLATE_LITERAL_PATTERN.findall(content):
+            # Extract the static prefix before any ${...} interpolation
+            prefix_match = self.TEMPLATE_LITERAL_PREFIX_PATTERN.match(match)
+            if prefix_match:
+                prefix = prefix_match.group(1)
+                # Only include if it has a meaningful path (not just /)
+                if prefix and len(prefix) > 1:
+                    urls.add(prefix)
+        return urls
+
     def _analyze_template_content(self, content: str, template_name: str) -> dict:
         """
         Analyze template content for URL references.
@@ -177,6 +211,11 @@ class TemplateAnalyzer:
         # Extract internal URLs from anywhere in the template (not just href)
         # This catches URLs in JavaScript, data attributes, event handlers, etc.
         internal_hrefs = set(self.INTERNAL_URL_PATTERN.findall(cleaned_content))
+
+        # Extended detection: also extract URLs from template literals
+        if self.url_detection == "extended":
+            template_literal_urls = self._extract_template_literal_urls(cleaned_content)
+            internal_hrefs.update(template_literal_urls)
 
         # Extract {% include %} tags
         includes = set(self.INCLUDE_PATTERN.findall(content))
@@ -397,6 +436,11 @@ class TemplateAnalyzer:
 
         # Extract internal URLs from the content
         internal_hrefs = set(self.INTERNAL_URL_PATTERN.findall(cleaned_content))
+
+        # Extended detection: also extract URLs from template literals
+        if self.url_detection == "extended":
+            template_literal_urls = self._extract_template_literal_urls(cleaned_content)
+            internal_hrefs.update(template_literal_urls)
 
         result = {
             "hrefs": internal_hrefs,

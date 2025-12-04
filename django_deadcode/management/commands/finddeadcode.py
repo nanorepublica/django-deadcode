@@ -58,6 +58,17 @@ class Command(BaseCommand):
             default=False,
             help="Also scan JavaScript files in static directories for URL references",
         )
+        parser.add_argument(
+            "--url-detection",
+            type=str,
+            choices=["basic", "extended"],
+            default="basic",
+            help=(
+                "URL detection level: 'basic' for static string URLs only, "
+                "'extended' for dynamic URL patterns like template literals "
+                "(default: basic)"
+            ),
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Execute the command."""
@@ -69,6 +80,9 @@ class Command(BaseCommand):
         # Get scan_static option
         scan_static = options.get("scan_static", False)
 
+        # Get url_detection option
+        url_detection = options.get("url_detection", "basic")
+
         # Get static directories if scanning static files
         static_dirs = self._get_static_dirs() if scan_static else []
 
@@ -79,6 +93,7 @@ class Command(BaseCommand):
             base_dir=base_dir,
             static_dirs=static_dirs,
             scan_static=scan_static,
+            url_detection=url_detection,
         )
         url_analyzer = URLAnalyzer()
         view_analyzer = ViewAnalyzer()

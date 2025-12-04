@@ -438,3 +438,133 @@ class TestStaticFileScanning:
         result = analyzer._analyze_static_content(js_content, "nutritionist.js")
 
         assert "/nutritionist/client/client_mfp_code/" in result["hrefs"]
+
+
+class TestExtendedUrlDetection:
+    """Test suite for extended URL detection (template literals)."""
+
+    def test_template_literal_basic(self):
+        """Test URL extraction from basic template literal."""
+        js_content = """
+            const url = `/api/users/`;
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        assert "/api/users/" in result["hrefs"]
+
+    def test_template_literal_with_interpolation(self):
+        """Test URL prefix extraction from template literal with ${...}."""
+        js_content = """
+            const url = `/api/users/${userId}/edit/`;
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        # Should extract the prefix before ${
+        assert "/api/users/" in result["hrefs"]
+
+    def test_template_literal_multiple_interpolations(self):
+        """Test URL prefix extraction with multiple interpolations."""
+        js_content = """
+            const url = `/api/${resource}/${id}/`;
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        # Should extract only up to first ${
+        assert "/api/" in result["hrefs"]
+
+    def test_template_literal_not_detected_in_basic_mode(self):
+        """Test that template literals are NOT detected in basic mode."""
+        js_content = """
+            const url = `/api/users/${userId}/`;
+        """
+        analyzer = TemplateAnalyzer(url_detection="basic")
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        # Should NOT find template literal URLs in basic mode
+        assert "/api/users/" not in result["hrefs"]
+        assert len(result["hrefs"]) == 0
+
+    def test_template_literal_in_template(self):
+        """Test template literal detection in HTML template content."""
+        content = """
+            <script>
+            const apiUrl = `/api/data/${id}/`;
+            fetch(apiUrl);
+            </script>
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_template_content(content, "test.html")
+
+        assert "/api/data/" in result["hrefs"]
+
+    def test_extended_detection_combines_with_basic(self):
+        """Test that extended mode also detects basic quoted URLs."""
+        js_content = """
+            const url1 = '/api/basic/';
+            const url2 = `/api/template/${id}/`;
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        # Should find both basic and template literal URLs
+        assert "/api/basic/" in result["hrefs"]
+        assert "/api/template/" in result["hrefs"]
+
+    def test_template_literal_with_expressions(self):
+        """Test template literal with complex expressions."""
+        js_content = """
+            const url = `/api/items/${item.id + 1}/details/`;
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        # Should extract prefix before ${
+        assert "/api/items/" in result["hrefs"]
+
+    def test_template_literal_ignores_non_url_strings(self):
+        """Test that template literals not starting with / are ignored."""
+        js_content = """
+            const msg = `Hello ${name}!`;
+            const path = `relative/path/${id}`;
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        # Should not find any URLs (no leading /)
+        assert len(result["hrefs"]) == 0
+
+    def test_url_detection_default_is_basic(self):
+        """Test that default url_detection is 'basic'."""
+        analyzer = TemplateAnalyzer()
+        assert analyzer.url_detection == "basic"
+
+    def test_url_detection_can_be_set_to_extended(self):
+        """Test that url_detection can be set to 'extended'."""
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        assert analyzer.url_detection == "extended"
+
+    def test_template_literal_in_fetch_call(self):
+        """Test template literal in fetch() call (common pattern)."""
+        js_content = """
+            fetch(`/api/users/${userId}`)
+                .then(response => response.json());
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_static_content(js_content, "api.js")
+
+        assert "/api/users/" in result["hrefs"]
+
+    def test_template_literal_excludes_just_slash(self):
+        """Test that template literals with just / are excluded."""
+        js_content = """
+            const root = `/`;
+            const url = `/${page}`;
+        """
+        analyzer = TemplateAnalyzer(url_detection="extended")
+        result = analyzer._analyze_static_content(js_content, "app.js")
+
+        # Should not include just "/" - needs a meaningful prefix
+        assert "/" not in result["hrefs"]
