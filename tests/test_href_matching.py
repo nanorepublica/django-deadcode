@@ -67,8 +67,9 @@ class TestPathNormalization:
     def test_normalize_embedded_caret_anchor(self):
         """Test that embedded ^ anchor is stripped from middle of pattern.
 
-        This happens when using: path('prefix/', include(...)) + re_path(r'^suffix/$', ...)
-        The accumulated pattern becomes: 'prefix/^suffix/$'
+        This happens when using: path('prefix/', include(...)) combined with
+        re_path(r'^suffix/$', ...). The accumulated pattern becomes:
+        'prefix/^suffix/$'
         """
         assert normalize_path("prefix/^suffix/$") == "prefix/suffix/"
 
@@ -86,7 +87,8 @@ class TestPathNormalization:
     def test_normalize_real_world_nested_include_pattern(self):
         """Test the exact pattern from the reported bug.
 
-        URL config: path('nutritionist/', include(...)) + re_path(r'^client/client_mfp_code/$', ...)
+        URL config: path('nutritionist/', include(...)) combined with
+        re_path(r'^client/client_mfp_code/$', ...)
         """
         assert (
             normalize_path("nutritionist/^client/client_mfp_code/$")

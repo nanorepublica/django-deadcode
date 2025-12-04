@@ -238,7 +238,7 @@ class Command(BaseCommand):
         if hasattr(settings, "STATICFILES_DIRS"):
             for dir_path in settings.STATICFILES_DIRS:
                 # Handle both string paths and tuples (prefix, path)
-                if isinstance(dir_path, (list, tuple)):
+                if isinstance(dir_path, list | tuple):
                     dir_path = dir_path[1]
                 static_dirs.append(Path(dir_path))
 

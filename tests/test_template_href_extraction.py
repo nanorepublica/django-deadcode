@@ -378,9 +378,7 @@ class TestStaticFileScanning:
         )
 
         # Add a static file
-        analyzer._analyze_static_content(
-            'const url = "/static/url/";', "app.js"
-        )
+        analyzer._analyze_static_content('const url = "/static/url/";', "app.js")
 
         all_hrefs = analyzer.get_all_internal_hrefs()
 
