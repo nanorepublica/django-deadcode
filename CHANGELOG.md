@@ -1,6 +1,20 @@
 # CHANGELOG
 
+## v0.9.0 (2025-12-11)
+
+### Chore
+
+* chore: release 0.9.0 ([`a3c37fd`](https://github.com/nanorepublica/django-deadcode/commit/a3c37fd6ed2c6007d766aa2c888f04d3e5d7c537))
+
+### Feature
+
+* feat: support module path for exclusions as well as namespaces ([`56bf8fd`](https://github.com/nanorepublica/django-deadcode/commit/56bf8fd7afc90946bf502a15ea348c27befd9512))
+
 ## v0.8.0 (2025-12-04)
+
+### Chore
+
+* chore(release): 0.8.0 ([`155ab8a`](https://github.com/nanorepublica/django-deadcode/commit/155ab8a39cb58988f27848af57cf97bb73371a4a))
 
 ### Documentation
 
@@ -498,7 +512,7 @@ Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/
 
 * chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
 
-* chore: set version to 0.3.0 for PyPI release
+* chore: set version to 0.3.0 for PyPI release 
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
