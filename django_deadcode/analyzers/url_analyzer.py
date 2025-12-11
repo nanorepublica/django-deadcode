@@ -197,6 +197,7 @@ class URLAnalyzer:
         for url_name in unreferenced:
             url_details = self.url_patterns.get(url_name, {})
             namespace = url_details.get("namespace")
+            module_path = url_details.get("module_path")
 
             # Check if URL should be excluded
             if namespace and namespace in excluded_namespaces:
@@ -208,6 +209,13 @@ class URLAnalyzer:
             if not namespace and None in excluded_namespaces:
                 excluded_namespaces_found.add(None)
                 continue
+
+            if not namespace and module_path:
+                if any(
+                    module_path.startswith(excluded) for excluded in excluded_namespaces
+                ):
+                    excluded_namespaces_found.add(module_path)
+                    continue
 
             filtered_unreferenced.add(url_name)
 
