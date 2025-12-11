@@ -498,7 +498,7 @@ Remove unused reporting sections from dashboard ([`7ee6a27`](https://github.com/
 
 * chore(release): 0.2.1 ([`58a9266`](https://github.com/nanorepublica/django-deadcode/commit/58a9266ce7ea78f567907bca66be333ebf8b001e))
 
-* chore: set version to 0.3.0 for PyPI release 
+* chore: set version to 0.3.0 for PyPI release
 
 Update package version to 0.2.3 ([`9cef729`](https://github.com/nanorepublica/django-deadcode/commit/9cef729b4f465cb717b9a54cbbb5bb20ca03c3cd))
 
