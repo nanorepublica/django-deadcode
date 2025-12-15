@@ -181,7 +181,7 @@ jobs:
           tag: ${{ steps.release.outputs.tag }}
 
       - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v3
         if: steps.release.outputs.released == 'true'
         with:
           subject-path: "dist/*"
